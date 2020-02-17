@@ -2,7 +2,7 @@
 ### Test Project ###
 ####################
 cmake_minimum_required(VERSION 3.9.2)
-project(testProject VERSION 0.0.2 DESCRIPTION "Test Project")
+project(testProject VERSION 0.0.3 DESCRIPTION "Test Project")
 include(ExternalProject)
 
 # Set mandatory requirements
@@ -32,24 +32,19 @@ elseif(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fno-optimize-sibling-calls")
-    #if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    #else()
-    #endif()
 endif()
+
+
+# Add source files
 find_package(Threads REQUIRED)
-
-
-# Add our own source files
+find_package(OpenGL REQUIRED)
+add_subdirectory(external/glfw)
 add_subdirectory(src)
 
 
 # Optionally build examples
 if(EXAMPLES)
-    #add_subdirectory( examples/Unpacker )
-    #add_subdirectory( examples/Updater )
-    #add_subdirectory( examples/Installer )
-    #add_subdirectory( examples/Uninstaller )
-    #add_subdirectory( examples/Wizard )
+    #add_subdirectory( examples/... )
 endif()
 
 
@@ -81,7 +76,7 @@ if(DOXYGEN_FOUND)
         set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
         set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
         set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ${PROJECT_SOURCE_DIR}/README.md)
-        set(DOXYGEN_EXCLUDE ${PROJECT_SOURCE_DIR}/external/ ${PROJECT_SOURCE_DIR}/src/lz4)
+        set(DOXYGEN_EXCLUDE ${PROJECT_SOURCE_DIR}/external/ ${PROJECT_SOURCE_DIR}/external/glfw)
         doxygen_add_docs(Documentation ${PROJECT_SOURCE_DIR} COMMENT "Generate docs")
     endif()
 endif()
