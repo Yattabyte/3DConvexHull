@@ -56,7 +56,8 @@ int main() {
 
     // Init GL functions
     glfwMakeContextCurrent(window.pointer());
-    if (gladLoadGLLoader((GLADloadproc)glfwGetProcAddress) == 0)
+    if (gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress)) ==
+        0)
         error_shutdown("Failed to initialize OpenGL context.\n");
 
     // Make shaders
@@ -67,7 +68,8 @@ int main() {
     }
 
     // Make models
-    const auto pointCloud = Hull::generate_point_cloud(7.5F, 256);
+    const auto pointCloud = Hull::generate_point_cloud(
+        7.5F, 256, static_cast<unsigned int>(glfwGetTime()));
     const Model hullModel(Hull::generate_convex_hull(pointCloud));
     const Model cloudModel(pointCloud);
 

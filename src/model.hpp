@@ -17,7 +17,7 @@ struct Model {
     ~Model();
     /** Construct a model given a vertex set.
     @param  vertices   the vertices to use (as triangles). */
-    Model(const std::vector<vec3>& vertices);
+    explicit Model(const std::vector<vec3>& vertices);
 
     // Methods
     /** Bind this model to the current context for rendering. */

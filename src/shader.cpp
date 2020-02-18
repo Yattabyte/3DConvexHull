@@ -2,7 +2,11 @@
 #include <glad/glad.h>
 #include <vector>
 
-Shader::~Shader() = default;
+Shader::~Shader() {
+    glDeleteShader(m_vertexID);
+    glDeleteShader(m_fragmentID);
+    glDeleteProgram(m_programID);
+}
 
 Shader::Shader(const char* const vertexSource, const char* const fragmentSource)
     : m_vertexID(glCreateShader(GL_VERTEX_SHADER)),
@@ -33,7 +37,8 @@ bool Shader::valid() const {
     if (m_vertexID == 0 || m_fragmentID == 0 || m_programID == 0)
         return false;
 
-    GLint param;
+    GLint param(0);
+    glGetProgramiv(m_programID, GL_LINK_STATUS, &param);
     return param != 0;
 }
 

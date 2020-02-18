@@ -1,7 +1,10 @@
 #include "model.hpp"
 #include <glad/glad.h>
 
-Model::~Model() = default;
+Model::~Model() {
+    glDeleteBuffers(1, &m_vboID);
+    glDeleteVertexArrays(1, &m_vaoID);
+}
 
 Model::Model(const std::vector<vec3>& vertices)
     : m_vertexCount(vertices.size()) {

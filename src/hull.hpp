@@ -92,8 +92,10 @@ struct Snork {
 /** Generate a point cloud with a specific number of points and scale.
 @param  scale   the scale to use.
 @param  count   the number of points to make.
+@param  seed    specific seed to use for random generation.
 @return a vector of points. */
-std::vector<vec3> generate_point_cloud(const float& scale, const size_t& count);
+std::vector<vec3> generate_point_cloud(
+    const float& scale, const size_t& count, const unsigned int& seed);
 /** Generate a convex hull given a set of points.
 @param  points  the points to generate a hull from.
 @return a convex hull containing the input points. */

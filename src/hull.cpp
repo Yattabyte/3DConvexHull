@@ -8,13 +8,13 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull);
 void add_coplanar(
     std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull, int id);
 int cross_test(
-    std::vector<vec3>& pts, const int& A, const int& B, const int& C,
+    const std::vector<vec3>& pts, const int& A, const int& B, const int& C,
     const int& X, float& er, float& ec, float& ez);
 
-std::vector<vec3>
-Hull::generate_point_cloud(const float& scale, const size_t& count) {
+std::vector<vec3> Hull::generate_point_cloud(
+    const float& scale, const size_t& count, const unsigned int& seed) {
     std::uniform_real_distribution<float> randomFloats(-scale, scale);
-    std::default_random_engine generator;
+    std::default_random_engine generator(seed);
     std::vector<vec3> points(count);
     std::generate(std::begin(points), std::end(points), [&]() {
         return vec3{ randomFloats(generator), randomFloats(generator),
@@ -85,13 +85,6 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
     std::vector<Hull::Snork> norts;
     hull.reserve(nump * 4);
 
-    float mr = 0;
-    float mc = 0;
-    float mz = 0;
-    float Mr = 0;
-    float Mc = 0;
-    float Mz = 0;
-
     Hull::Triangle T1(0, 1, 2);
     float r0 = pts[0].x;
     float c0 = pts[0].y;
@@ -103,9 +96,9 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
     float c2 = pts[2].y;
     float z2 = pts[2].z;
 
-    Mr = r0 + r1 + r2;
-    Mc = c0 + c1 + c2;
-    Mz = z0 + z1 + z2;
+    float Mr = r0 + r1 + r2;
+    float Mc = c0 + c1 + c2;
+    float Mz = z0 + z1 + z2;
 
     // check for co-linearity
     float r01 = r1 - r0;
@@ -119,7 +112,8 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
     float e1 = -r01 * z02 + r02 * z01;
     float e2 = r01 * c02 - r02 * c01;
 
-    if (e0 == 0 && e1 == 0 && e2 == 0) // do not add a facet.
+    // do not add a facet.
+    if (e0 == 0 && e1 == 0 && e2 == 0)
         return (-1);
 
     T1.id = 0;
@@ -127,7 +121,8 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
     T1.ec = e1;
     T1.ez = e2;
 
-    T1.ab = 1; // adjacent facet id number
+    // adjacent facet id number
+    T1.ab = 1;
     T1.ac = 1;
     T1.bc = 1;
 
@@ -146,16 +141,16 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
     std::vector<int> xlist;
     Hull::Triangle Tnew{};
 
-    for (int p = 3; p < nump;
-         p++) { // add points until a non coplanar set of points is achieved.
+    for (int p = 3; p < nump; p++) {
+        // add points until a non coplanar set of points is achieved.
         vec3& pt = pts[p];
 
         Mr += pt.x;
-        mr = Mr / (p + 1);
+        const auto mr = Mr / (p + 1);
         Mc += pt.y;
-        mc = Mc / (p + 1);
+        const auto mc = Mc / (p + 1);
         Mz += pt.z;
-        mz = Mz / (p + 1);
+        const auto mz = Mz / (p + 1);
 
         // find the first visible plane.
         int hvis = -1;
@@ -183,9 +178,8 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
                 break;
             }
         }
-        if (hvis < 0) {
+        if (hvis < 0)
             add_coplanar(pts, hull, p);
-        }
         if (hvis >= 0) {
             // new triangular facets are formed from neighbouring invisible
             // planes.
@@ -765,31 +759,26 @@ void add_coplanar(
                         }
                     }
 
-                    if (norts[s].b == 1) {
+                    if (norts[s].b == 1)
                         hull[norts[s].id].ab = norts[s1].id;
-                    } else {
+                    else
                         hull[norts[s].id].ac = norts[s1].id;
-                    }
 
-                    if (norts[s1].b == 1) {
+                    if (norts[s1].b == 1)
                         hull[norts[s1].id].ab = norts[s].id;
-                    } else {
+                    else
                         hull[norts[s1].id].ac = norts[s].id;
-                    }
 
                     // use s2 and s3
-
-                    if (norts[s2].b == 1) {
+                    if (norts[s2].b == 1)
                         hull[norts[s2].id].ab = norts[s3].id;
-                    } else {
+                    else
                         hull[norts[s2].id].ac = norts[s3].id;
-                    }
 
-                    if (norts[s3].b == 1) {
+                    if (norts[s3].b == 1)
                         hull[norts[s3].id].ab = norts[s2].id;
-                    } else {
+                    else
                         hull[norts[s3].id].ac = norts[s2].id;
-                    }
 
                     s += 3;
                 }
@@ -801,48 +790,46 @@ void add_coplanar(
 // cross product relative sign test.
 // remembers the cross product of (ab x cx)
 int cross_test(
-    std::vector<vec3>& pts, const int& A, const int& B, const int& C,
+    const std::vector<vec3>& pts, const int& A, const int& B, const int& C,
     const int& X, float& er, float& ec, float& ez) {
-    float Ar = pts[A].x;
-    float Ac = pts[A].y;
-    float Az = pts[A].z;
+    const auto Ar = pts[A].x;
+    const auto Ac = pts[A].y;
+    const auto Az = pts[A].z;
 
-    float Br = pts[B].x;
-    float Bc = pts[B].y;
-    float Bz = pts[B].z;
+    const auto Br = pts[B].x;
+    const auto Bc = pts[B].y;
+    const auto Bz = pts[B].z;
 
-    float Cr = pts[C].x;
-    float Cc = pts[C].y;
-    float Cz = pts[C].z;
+    const auto Cr = pts[C].x;
+    const auto Cc = pts[C].y;
+    const auto Cz = pts[C].z;
 
-    float Xr = pts[X].x;
-    float Xc = pts[X].y;
-    float Xz = pts[X].z;
+    const auto Xr = pts[X].x;
+    const auto Xc = pts[X].y;
+    const auto Xz = pts[X].z;
 
-    float ABr = Br - Ar;
-    float ABc = Bc - Ac;
-    float ABz = Bz - Az;
+    const auto ABr = Br - Ar;
+    const auto ABc = Bc - Ac;
+    const auto ABz = Bz - Az;
 
-    float ACr = Cr - Ar;
-    float ACc = Cc - Ac;
-    float ACz = Cz - Az;
+    const auto ACr = Cr - Ar;
+    const auto ACc = Cc - Ac;
+    const auto ACz = Cz - Az;
 
-    float AXr = Xr - Ar;
-    float AXc = Xc - Ac;
-    float AXz = Xz - Az;
+    const auto AXr = Xr - Ar;
+    const auto AXc = Xc - Ac;
+    const auto AXz = Xz - Az;
 
     er = (ABc * AXz - ABz * AXc);
     ec = -(ABr * AXz - ABz * AXr);
     ez = (ABr * AXc - ABc * AXr);
 
-    float kr = (ABc * ACz - ABz * ACc);
-    float kc = -(ABr * ACz - ABz * ACr);
-    float kz = (ABr * ACc - ABc * ACr);
+    const auto kr = (ABc * ACz - ABz * ACc);
+    const auto kc = -(ABr * ACz - ABz * ACr);
+    const auto kz = (ABr * ACc - ABc * ACr);
 
     //  look at sign of (ab x ac).(ab x ax)
-
-    float globit = kr * er + kc * ec + kz * ez;
-
+    const auto globit = kr * er + kc * ec + kz * ez;
     if (globit > 0)
         return (1);
     if (globit == 0)
