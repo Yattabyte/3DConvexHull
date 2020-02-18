@@ -3,6 +3,7 @@
 #include <cmath>
 #include <glad/glad.h>
 #include <iostream>
+#include <random>
 #include <vector>
 
 struct vec3 {
@@ -10,6 +11,9 @@ struct vec3 {
 
     vec3 operator-(const vec3& o) const {
         return vec3{ x - o.x, y - o.y, z - o.z };
+    }
+    vec3 operator+(const vec3& o) const {
+        return vec3{ x + o.x, y + o.y, z + o.z };
     }
 };
 
@@ -109,18 +113,38 @@ auto make_shader() {
     return shaderProgram;
 }
 
+/** Generate a point cloud in 3D space, applying the scale specified. */
+auto make_point_cloud(const float& scale) {
+    const std::uniform_real_distribution<float> randomFloats(-scale, scale);
+    std::default_random_engine generator;
+    std::vector<vec3> points(128);
+    std::generate(std::begin(points), std::end(points), [&]() {
+        return vec3{ randomFloats(generator), randomFloats(generator),
+                     randomFloats(generator) };
+    });
+    return points;
+}
+
 /** Make and return a model */
 auto make_model() {
-    // Create starting data
-    constexpr vec3 data[] = { { -1, -1, 0 }, { 1, -1, 0 }, { 0, 1, 0 } };
-    constexpr auto size = sizeof(vec3) * 3;
+    // Make point cloud and put triangles at each point
+    const auto points(make_point_cloud(5.0f));
+    std::vector<vec3> triangles;
+    triangles.reserve(points.size() * 3ULL);
+    for (const auto& point : points) {
+        triangles.emplace_back(point - vec3{ 1, 1, 0 });
+        triangles.emplace_back(point + vec3{ 1, -1, 0 });
+        triangles.emplace_back(point + vec3{ 0, 1, 0 });
+    }
 
     // Load geometry into vertex buffer object
     GLuint vboID(0);
     glCreateBuffers(1, &vboID);
-    glNamedBufferStorage(vboID, size, &data[0], GL_CLIENT_STORAGE_BIT);
+    glNamedBufferStorage(
+        vboID, sizeof(vec3) * triangles.size(), &triangles[0],
+        GL_CLIENT_STORAGE_BIT);
 
-    // Connect and setup the vertex array object
+    // Connect and set-up the vertex array object
     GLuint vaoID(0);
     glCreateVertexArrays(1, &vaoID);
     glEnableVertexArrayAttrib(vaoID, 0);
@@ -224,14 +248,14 @@ int main() {
                   distance * cosf(static_cast<float>(rotation) / pi) },
             vec3{ 0, 0, 0 }, vec3{ 0, 1, 0 });
         const auto mMatrix =
-            mat4{ 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 1 };
+            mat4{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
         glProgramUniformMatrix4fv(shader, 0, 1, GL_FALSE, &pMatrix.data[0][0]);
         glProgramUniformMatrix4fv(shader, 4, 1, GL_FALSE, &vMatrix.data[0][0]);
         glProgramUniformMatrix4fv(shader, 8, 1, GL_FALSE, &mMatrix.data[0][0]);
 
         // Draw
         glClear(GL_COLOR_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, 128 * 3);
 
         lastTime = time;
         glfwPollEvents();

@@ -2,7 +2,7 @@
 ### Test Project ###
 ####################
 cmake_minimum_required(VERSION 3.9.2)
-project(testProject VERSION 0.3.0 DESCRIPTION "Test Project")
+project(testProject VERSION 0.4.0 DESCRIPTION "Test Project")
 include(ExternalProject)
 
 # Set mandatory requirements
