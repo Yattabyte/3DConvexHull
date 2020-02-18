@@ -7,13 +7,19 @@ set(Module testProject)
 set(FILES
     # Header files
     ${PROJECT_SOURCE_DIR}/external/glad/glad.h
-    hull.hpp
     geometry.hpp
+    hull.hpp
+    model.hpp
+    shader.hpp
+    window.hpp
 
     # Source files    
     ${PROJECT_SOURCE_DIR}/external/glad/glad.c
-    main.cpp
     hull.cpp
+    main.cpp
+    model.cpp
+    shader.cpp
+    window.cpp
 )
 
 # Create Library using the supplied files

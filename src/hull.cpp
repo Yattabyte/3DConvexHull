@@ -1,23 +1,41 @@
 #include "hull.hpp"
 #include <algorithm>
+#include <random>
+
+std::vector<vec3>
+Hull::generate_point_cloud(const float& scale, const size_t& count) {
+    std::uniform_real_distribution<float> randomFloats(-scale, scale);
+    std::default_random_engine generator;
+    std::vector<vec3> points(count);
+    std::generate(std::begin(points), std::end(points), [&]() {
+        return vec3{ randomFloats(generator), randomFloats(generator),
+                     randomFloats(generator) };
+    });
+    return points;
+}
 
 // Generate a convex hull from a 3D point set
-int Hull::Generate_3D(
-    std::vector<Point3>& points, std::vector<Triangle>& hull) {
-    if (points.size() < 4)
-        return 1;
+std::vector<vec3>
+Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
+    // Return early if not at-least a tetrahedron
+    if (unsortedPoints.size() < 4)
+        return {};
+
+    // Sort points
+    auto points = unsortedPoints;
     sort(points.begin(), points.end());
 
     std::vector<Triangle> temp_hull;
-
     if (init_hull3D(points, temp_hull) != 0)
-        return 1;
+        return {};
 
     // just pick out the hull triangles and renumber.
     const size_t hull_size = temp_hull.size();
-    int* taken = new int[hull_size];
-    memset(taken, -1, hull_size * sizeof(int));
+    std::vector<int> taken(hull_size);
+    memset(taken.data(), -1, hull_size * sizeof(int));
 
+    std::vector<vec3> verticies;
+    verticies.reserve(hull_size * 3);
     int cnt = 0;
     for (int t = 0; t < hull_size;
          ++t) { // create an index from old tri-id to new tri-id.
@@ -32,34 +50,29 @@ int Hull::Generate_3D(
         if (temp_hull[t].keep > 0) { // point index remains unchanged.
             Triangle T = temp_hull[t];
             T.id = taken[t];
-            if (taken[T.ab] < 0) {
-                delete[] taken;
-                return 1;
-            }
+            if (taken[T.ab] < 0)
+                return {};
             T.ab = taken[T.ab];
 
-            if (taken[T.bc] < 0) {
-                delete[] taken;
-                return 1;
-            }
+            if (taken[T.bc] < 0)
+                return {};
             T.bc = taken[T.bc];
 
-            if (taken[T.ac] < 0) {
-                delete[] taken;
-                return 1;
-            }
+            if (taken[T.ac] < 0)
+                return {};
             T.ac = taken[T.ac];
 
-            hull.push_back(T);
+            verticies.emplace_back(points[T.a]);
+            verticies.emplace_back(points[T.b]);
+            verticies.emplace_back(points[T.c]);
         }
     }
 
-    delete[] taken;
-    return 0;
+    return verticies;
 }
 
 // Initialize the hull to the point where there is a not zero volume hull.
-int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
+int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
     int nump = (int)pts.size();
     std::vector<Snork> norts;
     hull.reserve(nump * 4);
@@ -72,15 +85,15 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
     float Mz = 0;
 
     Triangle T1(0, 1, 2);
-    float r0 = pts[0].xyz.x;
-    float c0 = pts[0].xyz.y;
-    float z0 = pts[0].xyz.z;
-    float r1 = pts[1].xyz.x;
-    float c1 = pts[1].xyz.y;
-    float z1 = pts[1].xyz.z;
-    float r2 = pts[2].xyz.x;
-    float c2 = pts[2].xyz.y;
-    float z2 = pts[2].xyz.z;
+    float r0 = pts[0].x;
+    float c0 = pts[0].y;
+    float z0 = pts[0].z;
+    float r1 = pts[1].x;
+    float c1 = pts[1].y;
+    float z1 = pts[1].z;
+    float r2 = pts[2].x;
+    float c2 = pts[2].y;
+    float z2 = pts[2].z;
 
     Mr = r0 + r1 + r2;
     Mc = c0 + c1 + c2;
@@ -127,27 +140,27 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
 
     for (int p = 3; p < nump;
          p++) { // add points until a non coplanar set of points is achieved.
-        Point3& pt = pts[p];
+        vec3& pt = pts[p];
 
-        Mr += pt.xyz.x;
+        Mr += pt.x;
         mr = Mr / (p + 1);
-        Mc += pt.xyz.y;
+        Mc += pt.y;
         mc = Mc / (p + 1);
-        Mz += pt.xyz.z;
+        Mz += pt.z;
         mz = Mz / (p + 1);
 
         // find the first visible plane.
         int hvis = -1;
-        float r = pt.xyz.x;
-        float c = pt.xyz.y;
-        float z = pt.xyz.z;
+        float r = pt.x;
+        float c = pt.y;
+        float z = pt.z;
         xlist.clear();
 
         for (int h = (int)hull.size() - 1; h >= 0; h--) {
             Triangle& t = hull[h];
-            float R1 = pts[t.a].xyz.x;
-            float C1 = pts[t.a].xyz.y;
-            float Z1 = pts[t.a].xyz.z;
+            float R1 = pts[t.a].x;
+            float C1 = pts[t.a].y;
+            float Z1 = pts[t.a].z;
 
             float dr = r - R1;
             float dc = c - C1;
@@ -175,9 +188,9 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
                 int ab = hull[xid].ab; // facet adjacent to line ab
                 Triangle& tAB = hull[ab];
 
-                float R1 = pts[tAB.a].xyz.x; // point on next triangle
-                float C1 = pts[tAB.a].xyz.y;
-                float Z1 = pts[tAB.a].xyz.z;
+                float R1 = pts[tAB.a].x; // point on next triangle
+                float C1 = pts[tAB.a].y;
+                float Z1 = pts[tAB.a].z;
 
                 float dr = r - R1;
                 float dc = c - C1;
@@ -203,12 +216,12 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
                     Tnew.bc = ab;
 
                     // make normal vector.
-                    float dr1 = pts[Tnew.a].xyz.x - pts[Tnew.b].xyz.x;
-                    float dr2 = pts[Tnew.a].xyz.x - pts[Tnew.c].xyz.x;
-                    float dc1 = pts[Tnew.a].xyz.y - pts[Tnew.b].xyz.y;
-                    float dc2 = pts[Tnew.a].xyz.y - pts[Tnew.c].xyz.y;
-                    float dz1 = pts[Tnew.a].xyz.z - pts[Tnew.b].xyz.z;
-                    float dz2 = pts[Tnew.a].xyz.z - pts[Tnew.c].xyz.z;
+                    float dr1 = pts[Tnew.a].x - pts[Tnew.b].x;
+                    float dr2 = pts[Tnew.a].x - pts[Tnew.c].x;
+                    float dc1 = pts[Tnew.a].y - pts[Tnew.b].y;
+                    float dc2 = pts[Tnew.a].y - pts[Tnew.c].y;
+                    float dz1 = pts[Tnew.a].z - pts[Tnew.b].z;
+                    float dz2 = pts[Tnew.a].z - pts[Tnew.c].z;
 
                     float er = (dc1 * dz2 - dc2 * dz1);
                     float ec = -(dr1 * dz2 - dr2 * dz1);
@@ -255,9 +268,9 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
                 int ac = hull[xid].ac; // facet adjacent to line ac
                 Triangle& tAC = hull[ac];
 
-                R1 = pts[tAC.a].xyz.x; // point on next triangle
-                C1 = pts[tAC.a].xyz.y;
-                Z1 = pts[tAC.a].xyz.z;
+                R1 = pts[tAC.a].x; // point on next triangle
+                C1 = pts[tAC.a].y;
+                Z1 = pts[tAC.a].z;
 
                 dr = r - R1;
                 dc = c - C1;
@@ -283,12 +296,12 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
                     Tnew.bc = ac;
 
                     // make normal vector.
-                    float dr1 = pts[Tnew.a].xyz.x - pts[Tnew.b].xyz.x;
-                    float dr2 = pts[Tnew.a].xyz.x - pts[Tnew.c].xyz.x;
-                    float dc1 = pts[Tnew.a].xyz.y - pts[Tnew.b].xyz.y;
-                    float dc2 = pts[Tnew.a].xyz.y - pts[Tnew.c].xyz.y;
-                    float dz1 = pts[Tnew.a].xyz.z - pts[Tnew.b].xyz.z;
-                    float dz2 = pts[Tnew.a].xyz.z - pts[Tnew.c].xyz.z;
+                    float dr1 = pts[Tnew.a].x - pts[Tnew.b].x;
+                    float dr2 = pts[Tnew.a].x - pts[Tnew.c].x;
+                    float dc1 = pts[Tnew.a].y - pts[Tnew.b].y;
+                    float dc2 = pts[Tnew.a].y - pts[Tnew.c].y;
+                    float dz1 = pts[Tnew.a].z - pts[Tnew.b].z;
+                    float dz2 = pts[Tnew.a].z - pts[Tnew.c].z;
 
                     float er = (dc1 * dz2 - dc2 * dz1);
                     float ec = -(dr1 * dz2 - dr2 * dz1);
@@ -334,9 +347,9 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
                 int bc = hull[xid].bc; // facet adjacent to line ac
                 Triangle& tBC = hull[bc];
 
-                R1 = pts[tBC.a].xyz.x; // point on next triangle
-                C1 = pts[tBC.a].xyz.y;
-                Z1 = pts[tBC.a].xyz.z;
+                R1 = pts[tBC.a].x; // point on next triangle
+                C1 = pts[tBC.a].y;
+                Z1 = pts[tBC.a].z;
 
                 dr = r - R1;
                 dc = c - C1;
@@ -362,12 +375,12 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
                     Tnew.bc = bc;
 
                     // make normal vector.
-                    float dr1 = pts[Tnew.a].xyz.x - pts[Tnew.b].xyz.x;
-                    float dr2 = pts[Tnew.a].xyz.x - pts[Tnew.c].xyz.x;
-                    float dc1 = pts[Tnew.a].xyz.y - pts[Tnew.b].xyz.y;
-                    float dc2 = pts[Tnew.a].xyz.y - pts[Tnew.c].xyz.y;
-                    float dz1 = pts[Tnew.a].xyz.z - pts[Tnew.b].xyz.z;
-                    float dz2 = pts[Tnew.a].xyz.z - pts[Tnew.c].xyz.z;
+                    float dr1 = pts[Tnew.a].x - pts[Tnew.b].x;
+                    float dr2 = pts[Tnew.a].x - pts[Tnew.c].x;
+                    float dc1 = pts[Tnew.a].y - pts[Tnew.b].y;
+                    float dc2 = pts[Tnew.a].y - pts[Tnew.c].y;
+                    float dz1 = pts[Tnew.a].z - pts[Tnew.b].z;
+                    float dz2 = pts[Tnew.a].z - pts[Tnew.c].z;
 
                     float er = (dc1 * dz2 - dc2 * dz1);
                     float ec = -(dr1 * dz2 - dr2 * dz1);
@@ -485,7 +498,7 @@ int Hull::init_hull3D(std::vector<Point3>& pts, std::vector<Triangle>& hull) {
 
 // add a point coplanar to the existing planar hull in 3D
 void Hull::add_coplanar(
-    std::vector<Point3>& pts, std::vector<Triangle>& hull, int id) {
+    std::vector<vec3>& pts, std::vector<Triangle>& hull, int id) {
     int numh = (int)hull.size();
     float er;
     float ec;
@@ -792,23 +805,23 @@ void Hull::add_coplanar(
 // cross product relative sign test.
 // remmebers the cross product of (ab x cx)
 int Hull::cross_test(
-    std::vector<Point3>& pts, const int& A, const int& B, const int& C,
+    std::vector<vec3>& pts, const int& A, const int& B, const int& C,
     const int& X, float& er, float& ec, float& ez) {
-    float Ar = pts[A].xyz.x;
-    float Ac = pts[A].xyz.y;
-    float Az = pts[A].xyz.z;
+    float Ar = pts[A].x;
+    float Ac = pts[A].y;
+    float Az = pts[A].z;
 
-    float Br = pts[B].xyz.x;
-    float Bc = pts[B].xyz.y;
-    float Bz = pts[B].xyz.z;
+    float Br = pts[B].x;
+    float Bc = pts[B].y;
+    float Bz = pts[B].z;
 
-    float Cr = pts[C].xyz.x;
-    float Cc = pts[C].xyz.y;
-    float Cz = pts[C].xyz.z;
+    float Cr = pts[C].x;
+    float Cc = pts[C].y;
+    float Cz = pts[C].z;
 
-    float Xr = pts[X].xyz.x;
-    float Xc = pts[X].xyz.y;
-    float Xz = pts[X].xyz.z;
+    float Xr = pts[X].x;
+    float Xc = pts[X].y;
+    float Xz = pts[X].z;
 
     float ABr = Br - Ar;
     float ABc = Bc - Ac;
