@@ -46,7 +46,7 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
     vertices.reserve(hull_size * 3ULL);
     int cnt = 0;
     for (size_t t = 0; t < hull_size;
-         ++t) { // create an index from old tri-id to new tri-id.
+         ++t) { // create an index from old triangle-id to new triangle-id.
         if (temp_hull[t].keep > 0) { // point index remains unchanged.
             taken[t] = cnt;
             cnt++;
@@ -54,7 +54,7 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
     }
 
     for (size_t t = 0; t < hull_size;
-         ++t) { // create an index from old tri-id to new tri-id.
+         ++t) { // create an index from old triangle-id to new triangle-id.
         if (temp_hull[t].keep > 0) { // point index remains unchanged.
             Triangle T = temp_hull[t];
             T.id = taken[t];
@@ -107,7 +107,7 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
     Mc = c0 + c1 + c2;
     Mz = z0 + z1 + z2;
 
-    // check for colinearity
+    // check for co-linearity
     float r01 = r1 - r0;
     float r02 = r2 - r0;
     float c01 = c1 - c0;
@@ -206,7 +206,7 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
 
                 float d = dr * tAB.er + dc * tAB.ec + dz * tAB.ez;
 
-                if (d > 0) { // add to xlist.
+                if (d > 0) { // add to list.
                     if (hull[ab].keep == 1) {
                         hull[ab].keep = 0;
                         xlist.push_back(ab);
@@ -286,7 +286,7 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
 
                 d = dr * tAC.er + dc * tAC.ec + dz * tAC.ez;
 
-                if (d > 0) { // add to xlist.
+                if (d > 0) { // add to list.
                     if (hull[ac].keep == 1) {
                         hull[ac].keep = 0;
                         xlist.push_back(ac);
@@ -365,7 +365,7 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
 
                 d = dr * tBC.er + dc * tBC.ec + dz * tBC.ez;
 
-                if (d > 0) { // add to xlist.
+                if (d > 0) { // add to list.
                     if (hull[bc].keep == 1) {
                         hull[bc].keep = 0;
                         xlist.push_back(bc);
@@ -474,7 +474,6 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
             }
 
             sort(norts.begin(), norts.begin() + nums);
-            //            int nums = (int) norts.size();
 
             if (nums >= 2) {
                 for (int s = 0; s < nums - 1; s++) {
@@ -495,11 +494,6 @@ int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
                 }
             }
         }
-        /*else{
-        cerr << "still in the coplanar state you fucking baboon..." << endl;
-        // rather complicated and need to add points to the 2D-hull as two faced
-        triangles. exit(0);
-        }*/
     }
     return (0);
 }
@@ -514,10 +508,9 @@ void add_coplanar(
     for (int k = 0; k < numh; k++) {
         // find visible edges. from external edges.
 
-        if (hull[k].c ==
-            hull[hull[k].ab]
-                .c) { // ->  ab is an external edge.
-                      // test this edge for visibility from new point pts[id].
+        if (hull[k].c == hull[hull[k].ab].c) { // ->  ab is an external edge.
+                                               // test this edge for visibility
+                                               // from new point points[id].
             int A = hull[k].a;
             int B = hull[k].b;
             int C = hull[k].c;
@@ -571,10 +564,9 @@ void add_coplanar(
             }
         }
 
-        if (hull[k].a ==
-            hull[hull[k].bc]
-                .a) { // bc is an external edge.
-                      // test this edge for visibility from new point pts[id].
+        if (hull[k].a == hull[hull[k].bc].a) { // bc is an external edge.
+                                               // test this edge for visibility
+                                               // from new point points[id].
             int A = hull[k].b;
             int B = hull[k].c;
             int C = hull[k].a;
@@ -628,10 +620,9 @@ void add_coplanar(
             }
         }
 
-        if (hull[k].b ==
-            hull[hull[k].ac]
-                .b) { // ac is an external edge.
-                      // test this edge for visibility from new point pts[id].
+        if (hull[k].b == hull[hull[k].ac].b) { // ac is an external edge.
+                                               // test this edge for visibility
+                                               // from new point points[id].
             int A = hull[k].a;
             int B = hull[k].c;
             int C = hull[k].b;
@@ -686,7 +677,7 @@ void add_coplanar(
         }
     }
 
-    // fix up the non asigned hull adjecencies (correctly).
+    // Fix up the non assigned hull adjacencies (correctly).
     int numN = (int)hull.size();
     std::vector<Hull::Snork> norts;
     Hull::Snork snort;
@@ -808,7 +799,7 @@ void add_coplanar(
 }
 
 // cross product relative sign test.
-// remmebers the cross product of (ab x cx)
+// remembers the cross product of (ab x cx)
 int cross_test(
     std::vector<vec3>& pts, const int& A, const int& B, const int& C,
     const int& X, float& er, float& ec, float& ez) {

@@ -15,11 +15,11 @@ struct vec3 {
     /** Default construct this vector. */
     vec3() = default;
     /** Construct a vector using 3 specific attributes.
-    @param  xx  the x value to use.
-    @param  yy  the y value to use.
-    @param  zz  the z value to use. */
-    vec3(const float& xx, const float& yy, const float& zz)
-        : x(xx), y(yy), z(zz) {}
+    @param  _x  the x value to use.
+    @param  _y  the y value to use.
+    @param  _z  the z value to use. */
+    vec3(const float& _x, const float& _y, const float& _z)
+        : x(_x), y(_y), z(_z) {}
     /** Default copy constructor. */
     vec3(const vec3& o) = default;
     /** Default move constructor. */

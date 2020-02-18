@@ -1,7 +1,7 @@
 #include "model.hpp"
 #include <glad/glad.h>
 
-Model::~Model() {}
+Model::~Model() = default;
 
 Model::Model(const std::vector<vec3>& vertices)
     : m_vertexCount(vertices.size()) {

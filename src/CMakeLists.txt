@@ -13,7 +13,7 @@ set(FILES
     shader.hpp
     window.hpp
 
-    # Source files    
+    # Source files
     ${PROJECT_SOURCE_DIR}/external/glad/glad.c
     hull.cpp
     main.cpp

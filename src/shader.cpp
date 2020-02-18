@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <vector>
 
-Shader::~Shader() {}
+Shader::~Shader() = default;
 
 Shader::Shader(const char* const vertexSource, const char* const fragmentSource)
     : m_vertexID(glCreateShader(GL_VERTEX_SHADER)),
@@ -34,10 +34,7 @@ bool Shader::valid() const {
         return false;
 
     GLint param;
-    if (glGetProgramiv(m_programID, GL_LINK_STATUS, &param); param == 0)
-        return false;
-
-    return true;
+    return param != 0;
 }
 
 std::string Shader::errorLog() const {

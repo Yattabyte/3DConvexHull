@@ -1,6 +1,6 @@
 # A test project using C++, OpenGL and CMake
  This test project uses C++, OpenGL, CMake, CTest, and CI tools.
- 
+
  [![Linux](https://img.shields.io/travis/yattabyte/TestProject?label=Linux%20Build&logo=Travis)](https://travis-ci.com/Yattabyte/TestProject)
  [![Windows](https://img.shields.io/appveyor/ci/yattabyte/TestProject?label=Windows%20Build&logo=Appveyor)](https://ci.appveyor.com/project/Yattabyte/TestProject)
  [![CodeCov](https://img.shields.io/codecov/c/gh/yattabyte/TestProject?label=Code%20Coverage&logo=CodeCov)](https://codecov.io/gh/Yattabyte/TestProject)

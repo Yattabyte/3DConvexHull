@@ -22,11 +22,11 @@ struct Triangle {
     /** Default construct a triangle. */
     Triangle() = default;
     /** Construct a triangle with specific indices.
-    @param  aa  the first point index.
-    @param  bb  the second point index.
-    @param  cc  the third point index.*/
-    Triangle(const int& aa, const int& bb, const int& cc)
-        : a(aa), b(bb), c(cc){};
+    @param  _a  the first point index.
+    @param  _b  the second point index.
+    @param  _c  the third point index.*/
+    Triangle(const int& _a, const int& _b, const int& _c)
+        : a(_a), b(_b), c(_c){};
     /** Default copy a triangle. */
     Triangle(const Triangle& p) = default;
     /** Default move a triangle. */
