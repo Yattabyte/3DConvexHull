@@ -74,7 +74,7 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
 // Initialize the hull to the point where there is a non-zero volume hull.
 int init_hull3D(
     const std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
-    const auto ptsCount = pts.size();
+    const auto ptsCount = static_cast<int>(pts.size());
     std::vector<Hull::Snork> norts;
     hull.reserve(ptsCount * 4ULL);
 
