@@ -6,8 +6,10 @@ set(Module testProject)
 # Configure and acquire files
 set(FILES
     # Header files
+    ${PROJECT_SOURCE_DIR}/external/glad/glad.h
 
-    # Source files
+    # Source files    
+    ${PROJECT_SOURCE_DIR}/external/glad/glad.c
     main.cpp
 )
 
@@ -15,6 +17,7 @@ set(FILES
 add_executable(${Module} ${FILES})
 target_include_directories(${Module}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC ${PROJECT_SOURCE_DIR}/external
 )
 
 # Add library dependencies
