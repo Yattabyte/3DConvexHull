@@ -5,7 +5,7 @@ echo "
 **************************************************
 Starting CPPCheck
 **************************************************"
-cppcheck src tests -isrc/lz4 -I src/ -I tests/ --enable=all --quiet --suppress=missingIncludeSystem || exit 1
+cppcheck src tests -iexternal/ -I src/ -I tests/ --enable=all --quiet --suppress=missingIncludeSystem || exit 1
 
 # Run Clang-Tidy using cmake
 echo "
@@ -65,4 +65,4 @@ Starting OCLint
 **************************************************"
 cmake -DCMAKE_CXX_FLAGS="-g -O0" -DCMAKE_EXE_LINKER_FLAGS="-g -O0" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON . || exit 1
 cmake --build . --clean-first -- -j $(nproc) || exit 1
-oclint-json-compilation-database -i src -i tests  -e src/lz4 || exit 1
+oclint-json-compilation-database -i src -i tests -e external || exit 1
