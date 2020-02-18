@@ -13390,7 +13390,9 @@ static void find_coreGL(void) {
      * https://github.com/elmindreda/greg/blob/master/templates/greg.c.in#L176
      * https://github.com/glfw/glfw/blob/master/src/context.c#L36
      */
-    int i, major, minor;
+    int i;
+    int major;
+    int minor;
 
     const char* version;
     const char* prefixes[] = { "OpenGL ES-CM ", "OpenGL ES-CL ", "OpenGL ES ",

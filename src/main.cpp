@@ -1,8 +1,23 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include <glad/glad.h>
 #include <iostream>
 #include <vector>
+
+struct vec3 {
+    float x, y, z;
+
+    vec3 operator-(const vec3& o) const {
+        return vec3{ x - o.x, y - o.y, z - o.z };
+    }
+};
+
+struct mat4 {
+    float data[4][4]{
+        { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 }
+    };
+};
 
 /** Report an error and shutdown. */
 void error_shutdown(const char* errorMsg) {
@@ -36,10 +51,12 @@ constexpr auto const vertCode = R"END(
     #version 430
 
     layout(location = 0) in vec3 vertex;
-    layout(location = 0) uniform mat4 pvmMatrix;
+    layout(location = 0) uniform mat4 pMatrix;
+    layout(location = 4) uniform mat4 vMatrix;
+    layout(location = 8) uniform mat4 mMatrix;
 
     void main() {
-        gl_Position = vec4(vertex, 1.0);
+        gl_Position = pMatrix * vMatrix * mMatrix * vec4(vertex, 1.0);
     }
 )END";
 
@@ -95,9 +112,6 @@ auto make_shader() {
 /** Make and return a model */
 auto make_model() {
     // Create starting data
-    struct vec3 {
-        float x, y, z;
-    };
     constexpr vec3 data[] = { { -1, -1, 0 }, { 1, -1, 0 }, { 0, 1, 0 } };
     constexpr auto size = sizeof(vec3) * 3;
 
@@ -116,6 +130,57 @@ auto make_model() {
     return vaoID;
 }
 
+vec3 normalize(const vec3& v) {
+    float length_of_v = std::sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+    return vec3{ v.x / length_of_v, v.y / length_of_v, v.z / length_of_v };
+}
+
+constexpr vec3 cross(const vec3& a, const vec3& b) {
+    return vec3{ a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+                 a.x * b.y - a.y * b.x };
+}
+
+constexpr float dot(const vec3& a, const vec3& b) {
+    return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+}
+
+mat4 lookAt(vec3 const& eye, vec3 const& center, vec3 const& up) {
+    vec3 f = normalize(center - eye);
+    vec3 u = normalize(up);
+    vec3 s = normalize(cross(f, u));
+    u = cross(s, f);
+
+    mat4 Result;
+    Result.data[0][0] = s.x;
+    Result.data[1][0] = s.y;
+    Result.data[2][0] = s.z;
+    Result.data[3][0] = -dot(s, eye);
+    Result.data[0][1] = u.x;
+    Result.data[1][1] = u.y;
+    Result.data[2][1] = u.z;
+    Result.data[3][1] = -dot(u, eye);
+    Result.data[0][2] = -f.x;
+    Result.data[1][2] = -f.y;
+    Result.data[2][2] = -f.z;
+    Result.data[3][2] = dot(f, eye);
+    return Result;
+}
+
+mat4 perspective(
+    float const& fovy, float const& aspect, float const& zNear,
+    float const& zFar) {
+    float const rad = fovy;
+    float tanHalfFovy = tanf(rad / float(2));
+
+    mat4 Result;
+    Result.data[0][0] = 1.0F / (aspect * tanHalfFovy);
+    Result.data[1][1] = 1.0F / (tanHalfFovy);
+    Result.data[2][2] = -(zFar + zNear) / (zFar - zNear);
+    Result.data[2][3] = -1.0F;
+    Result.data[3][2] = -(2.0F * zFar * zNear) / (zFar - zNear);
+    return Result;
+}
+
 int main() {
     // Init GLFW
     if (glfwInit() != GLFW_TRUE)
@@ -123,7 +188,7 @@ int main() {
 
     // Create Window
     const auto& window = make_window();
-    if (!window)
+    if (window == nullptr)
         error_shutdown("Failed to create a window.\n");
 
     // Init GL functions
@@ -138,17 +203,37 @@ int main() {
     const auto model = make_model();
 
     // Main Loop
-    while (!glfwWindowShouldClose(window)) {
+    double lastTime(0.0F);
+    double rotation(0.0F);
+    while (glfwWindowShouldClose(window) == 0) {
+        const auto time = glfwGetTime();
+        rotation += (time - lastTime) * 2.5F;
+
         // Bind shader
         glUseProgram(shader);
 
         // Bind model
         glBindVertexArray(model);
 
+        // Set matrix
+        const auto distance = 15.0F;
+        const auto pi = 3.14159F;
+        const auto pMatrix = perspective(1.5708F, 1.0F, 0.01F, 10.0F);
+        const auto vMatrix = lookAt(
+            vec3{ distance * sinf(static_cast<float>(rotation) / pi), 0,
+                  distance * cosf(static_cast<float>(rotation) / pi) },
+            vec3{ 0, 0, 0 }, vec3{ 0, 1, 0 });
+        const auto mMatrix =
+            mat4{ 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 10, 0, 0, 0, 0, 1 };
+        glProgramUniformMatrix4fv(shader, 0, 1, GL_FALSE, &pMatrix.data[0][0]);
+        glProgramUniformMatrix4fv(shader, 4, 1, GL_FALSE, &vMatrix.data[0][0]);
+        glProgramUniformMatrix4fv(shader, 8, 1, GL_FALSE, &mMatrix.data[0][0]);
+
         // Draw
         glClear(GL_COLOR_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
+        lastTime = time;
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
