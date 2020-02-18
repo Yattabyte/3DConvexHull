@@ -389,7 +389,7 @@ int init_hull3D(
             // patch up the new triangles in hull.
             int numN = (int)hull.size();
             auto numS(static_cast<int>(norts.size()));
-            auto nums(0ULL);
+            auto nums(0);
             Hull::Snork snort;
             for (int q = numN - 1; q >= numh; --q) {
                 if (hull[q].keep > 1) {
