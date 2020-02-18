@@ -1,5 +1,6 @@
 #include "hull.hpp"
 #include <algorithm>
+#include <cstring>
 #include <random>
 
 std::vector<vec3>
@@ -30,14 +31,13 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
         return {};
 
     // just pick out the hull triangles and renumber.
-    const size_t hull_size = temp_hull.size();
-    std::vector<int> taken(hull_size);
-    memset(taken.data(), -1, hull_size * sizeof(int));
+    const auto hull_size = temp_hull.size();
+    std::vector<int> taken(hull_size, -1);
 
     std::vector<vec3> verticies;
-    verticies.reserve(hull_size * 3);
+    verticies.reserve(hull_size * 3ULL);
     int cnt = 0;
-    for (int t = 0; t < hull_size;
+    for (size_t t = 0; t < hull_size;
          ++t) { // create an index from old tri-id to new tri-id.
         if (temp_hull[t].keep > 0) { // point index remains unchanged.
             taken[t] = cnt;
@@ -45,7 +45,7 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
         }
     }
 
-    for (int t = 0; t < hull_size;
+    for (size_t t = 0; t < hull_size;
          ++t) { // create an index from old tri-id to new tri-id.
         if (temp_hull[t].keep > 0) { // point index remains unchanged.
             Triangle T = temp_hull[t];
