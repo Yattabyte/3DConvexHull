@@ -28,8 +28,6 @@ ctest --output-on-failure --quiet -j $(nproc) -C Debug -D ExperimentalTest . || 
 ctest --output-on-failure --quiet -j $(nproc) -C Debug -D ExperimentalMemCheck . || exit 1
 echo "Dumping Logs"
 echo "$(<${TRAVIS_BUILD_DIR}/Testing/Temporary/MemoryChecker.1.log)"
-echo "$(<${TRAVIS_BUILD_DIR}/Testing/Temporary/MemoryChecker.2.log)"
-echo "$(<${TRAVIS_BUILD_DIR}/Testing/Temporary/MemoryChecker.3.log)"
 
 # Address Sanitizers
 echo "

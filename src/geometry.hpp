@@ -14,6 +14,8 @@ struct vec3 {
     ~vec3() = default;
     /** Default construct this vector. */
     vec3() = default;
+    /** Construct a vector using 1 specific value. */
+    vec3(const float& value) : x(value), y(value), z(value) {}
     /** Construct a vector using 3 specific attributes.
     @param  _x  the x value to use.
     @param  _y  the y value to use.
@@ -41,6 +43,12 @@ struct vec3 {
     @return     this vector plus the other vector. */
     vec3 operator+(const vec3& o) const {
         return vec3{ x + o.x, y + o.y, z + o.z };
+    }
+    /** Divide by another vector.
+    @param  o   the other vector.
+    @return     this vector divided by the other vector. */
+    vec3 operator/(const vec3& o) const {
+        return vec3{ x / o.x, y / o.y, z / o.z };
     }
     /** Compare this vector against another for sorting purposes. */
     bool operator<(const vec3& other) const {
