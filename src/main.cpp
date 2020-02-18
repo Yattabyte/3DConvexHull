@@ -1,5 +1,6 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include <glad/glad.h>
 #include <iostream>
 #include <vector>
