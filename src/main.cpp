@@ -2,11 +2,11 @@
 #include "geometry.hpp"
 #include "hull.hpp"
 #include <GLFW/glfw3.h>
+#include <algorithm>
 #include <cmath>
 #include <glad/glad.h>
 #include <iostream>
 #include <random>
-#include <set>
 #include <vector>
 
 /** Report an error and shutdown. */
