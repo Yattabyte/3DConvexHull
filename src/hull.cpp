@@ -388,8 +388,8 @@ int init_hull3D(
 
             // patch up the new triangles in hull.
             int numN = (int)hull.size();
-            size_t numS(norts.size());
-            size_t nums(0ULL);
+            auto numS(static_cast<int>(norts.size()));
+            auto nums(0ULL);
             Hull::Snork snort;
             for (int q = numN - 1; q >= numh; --q) {
                 if (hull[q].keep > 1) {
@@ -404,7 +404,7 @@ int init_hull3D(
                         snort.b = 1;
                         norts.emplace_back(snort);
                         nums++;
-                        numS = norts.size();
+                        numS = static_cast<int>(norts.size());
                     }
 
                     if (nums < numS) {
@@ -417,7 +417,7 @@ int init_hull3D(
                         snort.b = 0;
                         norts.emplace_back(snort);
                         nums++;
-                        numS = norts.size();
+                        numS = static_cast<int>(norts.size());
                     }
 
                     hull[q].keep = 1;
