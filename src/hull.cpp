@@ -3,6 +3,14 @@
 #include <cstring>
 #include <random>
 
+// Forward Declarations
+int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull);
+void add_coplanar(
+    std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull, int id);
+int cross_test(
+    std::vector<vec3>& pts, const int& A, const int& B, const int& C,
+    const int& X, float& er, float& ec, float& ez);
+
 std::vector<vec3>
 Hull::generate_point_cloud(const float& scale, const size_t& count) {
     std::uniform_real_distribution<float> randomFloats(-scale, scale);
@@ -34,8 +42,8 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
     const auto hull_size = temp_hull.size();
     std::vector<int> taken(hull_size, -1);
 
-    std::vector<vec3> verticies;
-    verticies.reserve(hull_size * 3ULL);
+    std::vector<vec3> vertices;
+    vertices.reserve(hull_size * 3ULL);
     int cnt = 0;
     for (size_t t = 0; t < hull_size;
          ++t) { // create an index from old tri-id to new tri-id.
@@ -62,19 +70,19 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
                 return {};
             T.ac = taken[T.ac];
 
-            verticies.emplace_back(points[T.a]);
-            verticies.emplace_back(points[T.b]);
-            verticies.emplace_back(points[T.c]);
+            vertices.emplace_back(points[T.a]);
+            vertices.emplace_back(points[T.b]);
+            vertices.emplace_back(points[T.c]);
         }
     }
 
-    return verticies;
+    return vertices;
 }
 
 // Initialize the hull to the point where there is a not zero volume hull.
-int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
+int init_hull3D(std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull) {
     int nump = (int)pts.size();
-    std::vector<Snork> norts;
+    std::vector<Hull::Snork> norts;
     hull.reserve(nump * 4);
 
     float mr = 0;
@@ -84,7 +92,7 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
     float Mc = 0;
     float Mz = 0;
 
-    Triangle T1(0, 1, 2);
+    Hull::Triangle T1(0, 1, 2);
     float r0 = pts[0].x;
     float c0 = pts[0].y;
     float z0 = pts[0].z;
@@ -136,7 +144,7 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
 
     hull.push_back(T1);
     std::vector<int> xlist;
-    Triangle Tnew{};
+    Hull::Triangle Tnew{};
 
     for (int p = 3; p < nump;
          p++) { // add points until a non coplanar set of points is achieved.
@@ -157,7 +165,7 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
         xlist.clear();
 
         for (int h = (int)hull.size() - 1; h >= 0; h--) {
-            Triangle& t = hull[h];
+            Hull::Triangle& t = hull[h];
             float R1 = pts[t.a].x;
             float C1 = pts[t.a].y;
             float Z1 = pts[t.a].z;
@@ -186,7 +194,7 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
             for (int x = 0; x < numx; x++) {
                 int xid = xlist[x];
                 int ab = hull[xid].ab; // facet adjacent to line ab
-                Triangle& tAB = hull[ab];
+                Hull::Triangle& tAB = hull[ab];
 
                 float R1 = pts[tAB.a].x; // point on next triangle
                 float C1 = pts[tAB.a].y;
@@ -266,7 +274,7 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
                 // second side of the struck out triangle
 
                 int ac = hull[xid].ac; // facet adjacent to line ac
-                Triangle& tAC = hull[ac];
+                Hull::Triangle& tAC = hull[ac];
 
                 R1 = pts[tAC.a].x; // point on next triangle
                 C1 = pts[tAC.a].y;
@@ -345,7 +353,7 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
                 // third side of the struck out triangle
 
                 int bc = hull[xid].bc; // facet adjacent to line ac
-                Triangle& tBC = hull[bc];
+                Hull::Triangle& tBC = hull[bc];
 
                 R1 = pts[tBC.a].x; // point on next triangle
                 C1 = pts[tBC.a].y;
@@ -428,7 +436,7 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
             // vector<Snork> norts;
             int numS = (int)norts.size();
             int nums = 0;
-            Snork snort;
+            Hull::Snork snort;
             for (int q = numN - 1; q >= numh; q--) {
                 if (hull[q].keep > 1) {
                     if (nums < numS) {
@@ -497,8 +505,8 @@ int Hull::init_hull3D(std::vector<vec3>& pts, std::vector<Triangle>& hull) {
 }
 
 // add a point coplanar to the existing planar hull in 3D
-void Hull::add_coplanar(
-    std::vector<vec3>& pts, std::vector<Triangle>& hull, int id) {
+void add_coplanar(
+    std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull, int id) {
     int numh = (int)hull.size();
     float er;
     float ec;
@@ -517,9 +525,8 @@ void Hull::add_coplanar(
             int zot = cross_test(pts, A, B, C, id, er, ec, ez);
 
             if (zot < 0) { // visible edge facet, create 2 new hull plates.
-                Triangle up{};
-                {}
-                Triangle down;
+                Hull::Triangle up;
+                Hull::Triangle down;
                 up.keep = 2;
                 up.id = (int)hull.size();
                 up.a = id;
@@ -575,9 +582,8 @@ void Hull::add_coplanar(
             int zot = cross_test(pts, A, B, C, id, er, ec, ez);
 
             if (zot < 0) { // visible edge facet, create 2 new hull plates.
-                Triangle up{};
-                {}
-                Triangle down;
+                Hull::Triangle up;
+                Hull::Triangle down;
                 up.keep = 2;
                 up.id = (int)hull.size();
                 up.a = id;
@@ -633,9 +639,8 @@ void Hull::add_coplanar(
             int zot = cross_test(pts, A, B, C, id, er, ec, ez);
 
             if (zot < 0) { // visible edge facet, create 2 new hull plates.
-                Triangle up{};
-                {}
-                Triangle down;
+                Hull::Triangle up;
+                Hull::Triangle down;
                 up.keep = 2;
                 up.id = (int)hull.size();
                 up.a = id;
@@ -683,8 +688,8 @@ void Hull::add_coplanar(
 
     // fix up the non asigned hull adjecencies (correctly).
     int numN = (int)hull.size();
-    std::vector<Snork> norts;
-    Snork snort;
+    std::vector<Hull::Snork> norts;
+    Hull::Snork snort;
     for (int q = numN - 1; q >= numh; q--) {
         if (hull[q].keep > 1) {
             snort.id = q;
@@ -702,7 +707,7 @@ void Hull::add_coplanar(
 
     sort(norts.begin(), norts.end());
     int nums = (int)norts.size();
-    Snork snor;
+    Hull::Snork snor;
     snor.id = -1;
     snor.a = -1;
     snor.b = -1;
@@ -804,7 +809,7 @@ void Hull::add_coplanar(
 
 // cross product relative sign test.
 // remmebers the cross product of (ab x cx)
-int Hull::cross_test(
+int cross_test(
     std::vector<vec3>& pts, const int& A, const int& B, const int& C,
     const int& X, float& er, float& ec, float& ez) {
     float Ar = pts[A].x;

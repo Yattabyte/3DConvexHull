@@ -3,15 +3,15 @@
 
 Model::~Model() {}
 
-Model::Model(const std::vector<vec3>& verticies)
-    : m_vertexCount(verticies.size()) {
+Model::Model(const std::vector<vec3>& vertices)
+    : m_vertexCount(vertices.size()) {
     // Create GL Objects
     glCreateVertexArrays(1, &m_vaoID);
     glCreateBuffers(1, &m_vboID);
 
     // Load geometry into vertex buffer object
     glNamedBufferStorage(
-        m_vboID, sizeof(vec3) * verticies.size(), &verticies[0],
+        m_vboID, sizeof(vec3) * vertices.size(), &vertices[0],
         GL_CLIENT_STORAGE_BIT);
 
     // Connect and set-up the vertex array object

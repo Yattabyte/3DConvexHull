@@ -4,6 +4,7 @@
 #include "geometry.hpp"
 #include <vector>
 
+/** A representation of an OpenGL model. */
 struct Model {
     // Attributes
     unsigned int m_vaoID = 0U;
@@ -11,15 +12,17 @@ struct Model {
     size_t m_vertexCount = 0ULL;
 
     // (De)Constructors
-    /***/
+    /** Destroy this model. */
     ~Model();
-    /***/
-    Model(const std::vector<vec3>& verticies);
+    /** Construct a model given a vertex set.
+    @param  vertices   the vertices to use (as triangles). */
+    Model(const std::vector<vec3>& vertices);
 
     // Methods
-    /***/
+    /** Bind this model to the current context for rendering. */
     void bind() const;
-    /***/
+    /** Draw this model..
+    @param  drawMode    either GL_TRIANGLES, GL_POINTS, GL_LINES, etc. */
     void draw(const int& drawMode) const;
 };
 
