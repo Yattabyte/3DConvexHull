@@ -1,6 +1,5 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
-#include <cmath>
 #include <glad/glad.h>
 #include <iostream>
 #include <vector>
@@ -131,7 +130,7 @@ auto make_model() {
 }
 
 vec3 normalize(const vec3& v) {
-    float length_of_v = std::sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+    float length_of_v = sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
     return vec3{ v.x / length_of_v, v.y / length_of_v, v.z / length_of_v };
 }
 
