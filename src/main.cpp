@@ -1,27 +1,13 @@
 #define GLFW_INCLUDE_NONE
+#include "geometry.hpp"
+#include "hull.hpp"
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <glad/glad.h>
 #include <iostream>
 #include <random>
+#include <set>
 #include <vector>
-
-struct vec3 {
-    float x, y, z;
-
-    vec3 operator-(const vec3& o) const {
-        return vec3{ x - o.x, y - o.y, z - o.z };
-    }
-    vec3 operator+(const vec3& o) const {
-        return vec3{ x + o.x, y + o.y, z + o.z };
-    }
-};
-
-struct mat4 {
-    float data[4][4]{
-        { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 }
-    };
-};
 
 /** Report an error and shutdown. */
 void error_shutdown(const char* errorMsg) {
@@ -54,13 +40,14 @@ auto make_window() {
 constexpr auto const vertCode = R"END(
     #version 430
 
-    layout(location = 0) in vec3 vertex;
-    layout(location = 0) uniform mat4 pMatrix;
-    layout(location = 4) uniform mat4 vMatrix;
-    layout(location = 8) uniform mat4 mMatrix;
+    layout (location = 0) in vec3 vertex;
+    layout (location = 0) uniform mat4 pMatrix;
+    layout (location = 4) uniform mat4 vMatrix;
+    layout (location = 8) uniform mat4 mMatrix;
 
     void main() {
         gl_Position = pMatrix * vMatrix * mMatrix * vec4(vertex, 1.0);
+        gl_PointSize = 10.0;
     }
 )END";
 
@@ -68,9 +55,10 @@ constexpr auto const fragCode = R"END(
     #version 430
 
     layout (location = 0) out vec3 fragColor;
+    layout (location = 12) uniform vec3 color;
 
     void main() {
-        fragColor = vec3(1.0f);
+        fragColor = color;
     }
 )END";
 
@@ -114,10 +102,10 @@ auto make_shader() {
 }
 
 /** Generate a point cloud in 3D space, applying the scale specified. */
-auto make_point_cloud(const float& scale) {
+auto make_point_cloud(const float& scale, const size_t& numberOfPoints) {
     const std::uniform_real_distribution<float> randomFloats(-scale, scale);
     std::default_random_engine generator;
-    std::vector<vec3> points(128);
+    std::vector<vec3> points(numberOfPoints);
     std::generate(std::begin(points), std::end(points), [&]() {
         return vec3{ randomFloats(generator), randomFloats(generator),
                      randomFloats(generator) };
@@ -125,23 +113,36 @@ auto make_point_cloud(const float& scale) {
     return points;
 }
 
-/** Make and return a model */
-auto make_model() {
-    // Make point cloud and put triangles at each point
-    const auto points(make_point_cloud(5.0f));
-    std::vector<vec3> triangles;
-    triangles.reserve(points.size() * 3ULL);
-    for (const auto& point : points) {
-        triangles.emplace_back(point - vec3{ 1, 1, 0 });
-        triangles.emplace_back(point + vec3{ 1, -1, 0 });
-        triangles.emplace_back(point + vec3{ 0, 1, 0 });
+/** Generate a convex hull from a set of points. */
+auto make_hull(const std::vector<vec3>& points) {
+    std::vector<Hull::Point3> pointsCopy;
+    pointsCopy.reserve(points.size());
+    for (const auto& point : points)
+        pointsCopy.emplace_back(Hull::Point3(point));
+    std::vector<Hull::Triangle> hull;
+    if (Hull::Generate_3D(pointsCopy, hull) != 0) {
     }
+
+    std::vector<vec3> vertices;
+    vertices.reserve(hull.size() * 3);
+    for (const auto& triangle : hull) {
+        vertices.emplace_back(pointsCopy[triangle.a].xyz);
+        vertices.emplace_back(pointsCopy[triangle.b].xyz);
+        vertices.emplace_back(pointsCopy[triangle.c].xyz);
+    }
+    return vertices;
+}
+
+/** Make and return a model */
+auto make_hull_model(const std::vector<vec3>& points) {
+    // Create a convex hull from a set of points
+    const auto verticies = make_hull(points);
 
     // Load geometry into vertex buffer object
     GLuint vboID(0);
     glCreateBuffers(1, &vboID);
     glNamedBufferStorage(
-        vboID, sizeof(vec3) * triangles.size(), &triangles[0],
+        vboID, sizeof(vec3) * verticies.size(), &verticies[0],
         GL_CLIENT_STORAGE_BIT);
 
     // Connect and set-up the vertex array object
@@ -151,7 +152,25 @@ auto make_model() {
     glVertexArrayAttribBinding(vaoID, 0, 0);
     glVertexArrayAttribFormat(vaoID, 0, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayVertexBuffer(vaoID, 0, vboID, 0, sizeof(vec3));
-    return vaoID;
+    return std::make_pair(vaoID, verticies.size());
+}
+
+/** Make and return a model */
+auto make_point_cloud_model(const std::vector<vec3>& points) {
+    // Load geometry into vertex buffer object
+    GLuint vboID(0);
+    glCreateBuffers(1, &vboID);
+    glNamedBufferStorage(
+        vboID, sizeof(vec3) * points.size(), &points[0], GL_CLIENT_STORAGE_BIT);
+
+    // Connect and set-up the vertex array object
+    GLuint vaoID(0);
+    glCreateVertexArrays(1, &vaoID);
+    glEnableVertexArrayAttrib(vaoID, 0);
+    glVertexArrayAttribBinding(vaoID, 0, 0);
+    glVertexArrayAttribFormat(vaoID, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayVertexBuffer(vaoID, 0, vboID, 0, sizeof(vec3));
+    return std::make_pair(vaoID, points.size());
 }
 
 vec3 normalize(const vec3& v) {
@@ -159,12 +178,12 @@ vec3 normalize(const vec3& v) {
     return vec3{ v.x / length_of_v, v.y / length_of_v, v.z / length_of_v };
 }
 
-constexpr vec3 cross(const vec3& a, const vec3& b) {
+vec3 cross(const vec3& a, const vec3& b) {
     return vec3{ a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
                  a.x * b.y - a.y * b.x };
 }
 
-constexpr float dot(const vec3& a, const vec3& b) {
+float dot(const vec3& a, const vec3& b) {
     return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
@@ -224,7 +243,12 @@ int main() {
     const auto shader = make_shader();
 
     // Make models
-    const auto model = make_model();
+    const auto pointCloud = make_point_cloud(7.5F, 256);
+    const auto& [hullModel, hullSize] = make_hull_model(pointCloud);
+    const auto& [cloudModel, cloudSize] = make_point_cloud_model(pointCloud);
+
+    // Enable point rendering
+    glEnable(GL_PROGRAM_POINT_SIZE);
 
     // Main Loop
     double lastTime(0.0F);
@@ -236,11 +260,11 @@ int main() {
         // Bind shader
         glUseProgram(shader);
 
-        // Bind model
-        glBindVertexArray(model);
+        // Bind hull model
+        glBindVertexArray(hullModel);
 
         // Set matrix
-        const auto distance = 15.0F;
+        const auto distance = 16.0F;
         const auto pi = 3.14159F;
         const auto pMatrix = perspective(1.5708F, 1.0F, 0.01F, 10.0F);
         const auto vMatrix = lookAt(
@@ -252,10 +276,16 @@ int main() {
         glProgramUniformMatrix4fv(shader, 0, 1, GL_FALSE, &pMatrix.data[0][0]);
         glProgramUniformMatrix4fv(shader, 4, 1, GL_FALSE, &vMatrix.data[0][0]);
         glProgramUniformMatrix4fv(shader, 8, 1, GL_FALSE, &mMatrix.data[0][0]);
+        glProgramUniform3f(shader, 12, 1, 1, 1);
 
         // Draw
         glClear(GL_COLOR_BUFFER_BIT);
-        glDrawArrays(GL_TRIANGLES, 0, 128 * 3);
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(hullSize));
+
+        // Bind point cloud model
+        glBindVertexArray(cloudModel);
+        glProgramUniform3f(shader, 12, 1, 0, 0);
+        glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(cloudSize));
 
         lastTime = time;
         glfwPollEvents();
