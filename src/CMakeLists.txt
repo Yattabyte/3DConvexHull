@@ -20,7 +20,8 @@ target_include_directories(${Module}
 # Add library dependencies
 target_compile_features(${Module} PRIVATE cxx_std_17)
 target_link_libraries(${Module} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
-target_link_libraries(${Module} glfw OpenGL::GL)
+target_link_libraries(${Module} glfw)
+target_link_libraries(${Module} OpenGL::GL)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     target_link_libraries(${Module} PRIVATE $<$<VERSION_LESS:$<CXX_COMPILER_VERSION>,9.0>:c++experimental stdc++fs>)
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
