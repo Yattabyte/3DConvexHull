@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstring>
 #include <random>
+#include <tuple>
 
 // Forward Declarations
 std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts);
