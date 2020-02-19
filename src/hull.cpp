@@ -8,9 +8,9 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts);
 void add_coplanar(
     const std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull,
     const int& id);
-int cross_test(
+std::tuple<float, float, float, float> cross_test(
     const std::vector<vec3>& pts, const int& A, const int& B, const int& C,
-    const int& X, float& er, float& ec, float& ez);
+    const int& X);
 
 std::vector<vec3> Hull::generate_point_cloud(
     const float& scale, const size_t& count, const unsigned int& seed) {
@@ -100,7 +100,7 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
         xList.clear();
         const auto& point(pts[p]);
         M = M + point;
-        const auto m(M / vec3(1.0F + p));
+        const auto m(M / vec3(1.0F + static_cast<float>(p)));
 
         // find the first visible plane.
         auto hvis(-1);
@@ -247,12 +247,10 @@ void add_coplanar(
         // visible edge facet, create 2 new hull plates.
         const auto test_external_edge = [&pts, &hull, &id, &k](
                                             const auto& A, const auto& B,
-                                            const auto& C, auto& hullK,
+                                            const auto& C, const auto& hullK,
                                             auto& hullXY, auto& xy) {
-            float er(0.0f);
-            float ec(0.0f);
-            float ez(0.0f);
-            if (cross_test(pts, A, B, C, id, er, ec, ez) < 0) {
+            const auto [er, ec, ez, sign] = cross_test(pts, A, B, C, id);
+            if (sign < 0) {
                 Hull::Triangle up{
                     (int)hull.size(), 2, id, A, B, -1, -1, -1, er, ec, ez
                 };
@@ -312,7 +310,8 @@ void add_coplanar(
     for (int s = 0; s < startSize - 1; ++s) {
         if (norts[s].a == norts[s + 1].a) {
             // link triangle sides.
-            if (norts[s].a != norts[s + 2].a) { // edge of figure case
+            if (norts[s].a != norts[s + 2].a) {
+                // edge of figure case
                 if (norts[s].b == 1)
                     hull[norts[s].id].ab = norts[s + 1].id;
                 else
@@ -322,7 +321,8 @@ void add_coplanar(
                 else
                     hull[norts[s + 1].id].ac = norts[s].id;
                 s++;
-            } else { // internal figure boundary 4 junction case.
+            } else {
+                // internal figure boundary 4 junction case.
                 int s1 = s + 1;
                 int s2 = s + 2;
                 int s3 = s + 3;
@@ -381,9 +381,9 @@ void add_coplanar(
 
 // cross product relative sign test.
 // remembers the cross product of (ab x cx)
-int cross_test(
+std::tuple<float, float, float, float> cross_test(
     const std::vector<vec3>& pts, const int& A, const int& B, const int& C,
-    const int& X, float& er, float& ec, float& ez) {
+    const int& X) {
     const auto Ar = pts[A].x;
     const auto Ac = pts[A].y;
     const auto Az = pts[A].z;
@@ -412,9 +412,9 @@ int cross_test(
     const auto AXc = Xc - Ac;
     const auto AXz = Xz - Az;
 
-    er = (ABc * AXz - ABz * AXc);
-    ec = -(ABr * AXz - ABz * AXr);
-    ez = (ABr * AXc - ABc * AXr);
+    const auto er = (ABc * AXz - ABz * AXc);
+    const auto ec = -(ABr * AXz - ABz * AXr);
+    const auto ez = (ABr * AXc - ABc * AXr);
 
     const auto kr = ABc * ACz - ABz * ACc;
     const auto kc = -(ABr * ACz - ABz * ACr);
@@ -422,10 +422,6 @@ int cross_test(
 
     // look at sign of (ab x ac).(ab x ax)
     const auto globit = kr * er + kc * ec + kz * ez;
-    if (globit > 0)
-        return 1;
-    if (globit == 0)
-        return 0;
 
-    return -1;
+    return { er, ec, ez, globit };
 }

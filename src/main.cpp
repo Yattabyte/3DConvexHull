@@ -87,8 +87,8 @@ int main() {
         shader.bind();
 
         // Set matrix
-        const auto distance = 16.0F;
-        const auto pi = 3.14159F;
+        constexpr auto distance = 16.0F;
+        constexpr auto pi = 3.14159F;
         const auto pMatrix = mat4::perspective(1.5708F, 1.0F, 0.01F, 10.0F);
         const auto vMatrix = mat4::lookAt(
             vec3{ distance * sinf(static_cast<float>(rotation) / pi), 0,

@@ -2,7 +2,7 @@
 ### 3D Convex Hull ###
 ######################
 cmake_minimum_required(VERSION 3.9.2)
-project(ConvexHull VERSION 0.7.2 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
+project(ConvexHull VERSION 0.7.3 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
 include(ExternalProject)
 
 # Set mandatory requirements
