@@ -245,11 +245,10 @@ void add_coplanar(
     const auto numh = (int)hull.size();
     for (int k = 0; k < numh; ++k) {
         // visible edge facet, create 2 new hull plates.
-        const auto test_external_edge = [&pts, &hull, &id](
+        const auto test_external_edge = [&pts, &hull, &id, &k](
                                             const auto& A, const auto& B,
-                                            const auto& C, const auto& k,
-                                            auto& hullK, auto& hullXY,
-                                            auto& xy) {
+                                            const auto& C, auto& hullK,
+                                            auto& hullXY, auto& xy) {
             float er(0.0f);
             float ec(0.0f);
             float ez(0.0f);
@@ -278,18 +277,18 @@ void add_coplanar(
         // test ab for visibility from new point
         if (hull[k].c == hull[hull[k].ab].c)
             test_external_edge(
-                hull[k].a, hull[k].b, hull[k].c, k, hull[k],
-                hull[hull[k].ab].ab, hull[k].ab);
+                hull[k].a, hull[k].b, hull[k].c, hull[k], hull[hull[k].ab].ab,
+                hull[k].ab);
         // test bc for visibility from new point
         if (hull[k].a == hull[hull[k].bc].a)
             test_external_edge(
-                hull[k].b, hull[k].c, hull[k].a, k, hull[k],
-                hull[hull[k].bc].bc, hull[k].bc);
+                hull[k].b, hull[k].c, hull[k].a, hull[k], hull[hull[k].bc].bc,
+                hull[k].bc);
         // test ac for visibility from new point
         if (hull[k].b == hull[hull[k].ac].b)
             test_external_edge(
-                hull[k].a, hull[k].c, hull[k].b, k, hull[k],
-                hull[hull[k].ac].ac, hull[k].ac);
+                hull[k].a, hull[k].c, hull[k].b, hull[k], hull[hull[k].ac].ac,
+                hull[k].ac);
     }
 
     // Fix up the non assigned hull adjacencies (correctly).
