@@ -1,5 +1,5 @@
-#include "geometry.hpp"
 #define GLFW_INCLUDE_NONE
+#include "geometry.hpp"
 #include "hull.hpp"
 #include "model.hpp"
 #include "shader.hpp"
@@ -69,7 +69,7 @@ int main() {
 
     // Make models
     const auto pointCloud = Hull::generate_point_cloud(
-        7.5F, 256, static_cast<unsigned int>(glfwGetTime()));
+        7.5F, 1280, static_cast<unsigned int>(glfwGetTime()));
     const Model hullModel(Hull::generate_convex_hull(pointCloud));
     const Model cloudModel(pointCloud);
 

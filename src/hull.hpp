@@ -16,27 +16,7 @@ struct Triangle {
     float er = 0.0f, ec = 0.0f,
           ez = 0.0f; // visible normal to triangular facet.
 
-    // (De)Constructors
-    /** Default destruct this triangle. */
-    ~Triangle() = default;
-    /** Default construct a triangle. */
-    Triangle() = default;
-    /** Construct a triangle with specific indices.
-    @param  _a  the first point index.
-    @param  _b  the second point index.
-    @param  _c  the third point index.*/
-    Triangle(const int& _a, const int& _b, const int& _c)
-        : a(_a), b(_b), c(_c){};
-    /** Default copy a triangle. */
-    Triangle(const Triangle& p) = default;
-    /** Default move a triangle. */
-    Triangle(Triangle&& p) noexcept = default;
-
     // Operators
-    /** Default copy-assignment operator. */
-    Triangle& operator=(const Triangle& p) = default;
-    /** Default move-assignment operator. */
-    Triangle& operator=(Triangle&& p) noexcept = default;
     /** Compare whether or not this triangle equals another.
     @param  t   the other triangle to compare against. */
     bool operator==(const Triangle& t) const {
@@ -72,16 +52,7 @@ struct Snork {
     int id = -1;
     int a = 0, b = 0;
 
-    // (De)Constructors
-    ~Snork() = default;
-    Snork() = default;
-    Snork(const int& i, const int& r, const int& x) : id(i), a(r), b(x){};
-    Snork(const Snork& p) = default;
-    Snork(Snork&& p) noexcept = default;
-
     // Operators
-    Snork& operator=(const Snork& p) = default;
-    Snork& operator=(Snork&& p) noexcept = default;
     bool operator<(const Snork& other) const {
         if (a == other.a)
             return b < other.b;

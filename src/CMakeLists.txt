@@ -1,7 +1,7 @@
 ###########
 ### SRC ###
 ###########
-set(Module testProject)
+set(Module srcCode)
 
 # Configure and acquire files
 set(FILES

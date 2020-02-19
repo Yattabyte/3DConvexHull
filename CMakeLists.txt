@@ -1,8 +1,8 @@
-####################
-### Test Project ###
-####################
+######################
+### 3D Convex Hull ###
+######################
 cmake_minimum_required(VERSION 3.9.2)
-project(testProject VERSION 0.6.8 DESCRIPTION "Test Project")
+project(ConvexHull VERSION 0.7.0 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
 include(ExternalProject)
 
 # Set mandatory requirements

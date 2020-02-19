@@ -15,7 +15,7 @@ struct vec3 {
     /** Default construct this vector. */
     vec3() = default;
     /** Construct a vector using 1 specific value. */
-    vec3(const float& value) : x(value), y(value), z(value) {}
+    explicit vec3(const float& value) : x(value), y(value), z(value) {}
     /** Construct a vector using 3 specific attributes.
     @param  _x  the x value to use.
     @param  _y  the y value to use.
