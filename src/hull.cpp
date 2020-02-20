@@ -73,11 +73,10 @@ Hull::generate_convex_hull(const std::vector<vec3>& unsortedPoints) {
 
 // Initialize the hull to the point where there is a non-zero volume hull.
 std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
+    // check for co-linearity
     const auto& point0(pts[0]);
     const auto& point1(pts[1]);
     const auto& point2(pts[2]);
-
-    // check for co-linearity
     const auto test1 = point1 - point0;
     const auto test2 = point2 - point0;
     const auto e0 = test1.y * test2.z - test2.y * test1.z;
@@ -98,25 +97,21 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
     std::vector<int> xList;
     auto M = point0 + point1 + point2;
     for (int p = 3, max = static_cast<int>(pts.size()); p < max; ++p) {
-        xList.clear();
         const auto& point(pts[p]);
         M = M + point;
         const auto m(M / vec3(1.0F + static_cast<float>(p)));
+        xList.clear();
+        int hvis(-1);
 
         // find the first visible plane.
-        auto hvis(-1);
         for (int h = (int)hull.size() - 1; h >= 0; --h) {
-            const auto& t = hull[h];
-            const auto& R1 = pts[t.a].x;
-            const auto& C1 = pts[t.a].y;
-            const auto& Z1 = pts[t.a].z;
-            const auto dr = point.x - R1;
-            const auto dc = point.y - C1;
-            const auto dz = point.z - Z1;
-
-            if (dr * t.er + dc * t.ec + dz * t.ez > 0) {
+            auto& triangle = hull[h];
+            const auto delta = point - pts[triangle.a];
+            if ((delta.x * triangle.er) + (delta.y * triangle.ec) +
+                    (delta.z * triangle.ez) >
+                0.0F) {
                 hvis = h;
-                hull[h].keep = 0;
+                triangle.keep = 0;
                 xList.emplace_back(hvis);
                 break;
             }
@@ -131,14 +126,11 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
                 [&hull, &pts, &point, &xList, &p, &numx,
                  &m](const auto& xy, const auto& X, const auto& Y, auto& tXY) {
                     // point on next triangle
-                    const auto& R1 = pts[tXY.a].x;
-                    const auto& C1 = pts[tXY.a].y;
-                    const auto& Z1 = pts[tXY.a].z;
-                    auto dr = point.x - R1;
-                    auto dc = point.y - C1;
-                    auto dz = point.z - Z1;
+                    auto delta(point - pts[tXY.a]);
 
-                    if (dr * tXY.er + dc * tXY.ec + dz * tXY.ez > 0) {
+                    if ((delta.x * tXY.er) + (delta.y * tXY.ec) +
+                            (delta.z * tXY.ez) >
+                        0.0F) {
                         // add to list.
                         if (tXY.keep == 1) {
                             tXY.keep = 0;
@@ -163,12 +155,11 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
                         const auto ez = dr1 * dc2 - dr2 * dc1;
 
                         // points from new facet towards 'm'
-                        dr = m.x - point.x;
-                        dc = m.y - point.y;
-                        dz = m.z - point.z;
+                        delta = m - point;
 
                         // make it point outwards.
-                        if (dr * er + dc * ec + dz * ez > 0) {
+                        if ((delta.x * er) + (delta.y * ec) + (delta.z * ez) >
+                            0.0F) {
                             Tnew.er = -er;
                             Tnew.ec = -ec;
                             Tnew.ez = -ez;
@@ -195,13 +186,10 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
                     }
                 };
             for (int x = 0; x < numx; ++x) {
-                const auto xid = xList[x];
-                facet_adjacent(
-                    hull[xid].ab, hull[xid].a, hull[xid].b, hull[hull[xid].ab]);
-                facet_adjacent(
-                    hull[xid].ac, hull[xid].a, hull[xid].c, hull[hull[xid].ac]);
-                facet_adjacent(
-                    hull[xid].bc, hull[xid].b, hull[xid].c, hull[hull[xid].bc]);
+                const auto hullX(hull[xList[x]]);
+                facet_adjacent(hullX.ab, hullX.a, hullX.b, hull[hullX.ab]);
+                facet_adjacent(hullX.ac, hullX.a, hullX.c, hull[hullX.ac]);
+                facet_adjacent(hullX.bc, hullX.b, hullX.c, hull[hullX.bc]);
             }
 
             // patch up the new triangles in hull.
@@ -238,6 +226,43 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
     return hull;
 }
 
+// visible edge facet, create 2 new hull plates.
+void test_external_edge(
+    const std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull,
+    const int& id, const int& k, const int& A, const int& B, const int& C,
+    const Hull::Triangle& hullK, int& hullXY, int& xy) {
+    const auto [sign, er, ec, ez] = cross_test(pts, A, B, C, id);
+    if (sign < 0) {
+        Hull::Triangle up{
+            (int)hull.size(), 2, id, A, B, -1, -1, -1, er, ec, ez
+        };
+        Hull::Triangle down{
+            (int)hull.size() + 1, 2, id, A, B, -1, -1, -1, -er, -ec, -ez
+        };
+        if (hullK.er * er + hullK.ec * ec + hullK.ez * ez > 0) {
+            up.bc = k;
+            down.bc = xy;
+            xy = up.id;
+            hullXY = down.id;
+        } else {
+            down.bc = k;
+            up.bc = xy;
+            xy = down.id;
+            hullXY = up.id;
+        }
+        hull.emplace_back(up);
+        hull.emplace_back(down);
+    }
+};
+
+bool check_direction(
+    int& idA, int& idB, const std::vector<Hull::Triangle>& hull) {
+    return (
+        (hull[idA].er * hull[idB].er) + (hull[idA].ec * hull[idB].ec) +
+            (hull[idA].ez * hull[idB].ez) >
+        0.0F);
+}
+
 // add a point coplanar to the existing planar hull in 3D
 void add_coplanar(
     const std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull,
@@ -245,49 +270,21 @@ void add_coplanar(
     // find visible edges. from external edges.
     const auto numh = (int)hull.size();
     for (int k = 0; k < numh; ++k) {
-        // visible edge facet, create 2 new hull plates.
-        const auto test_external_edge = [&pts, &hull, &id, &k](
-                                            const auto& A, const auto& B,
-                                            const auto& C, const auto& hullK,
-                                            auto& hullXY, auto& xy) {
-            const auto [er, ec, ez, sign] = cross_test(pts, A, B, C, id);
-            if (sign < 0) {
-                Hull::Triangle up{
-                    (int)hull.size(), 2, id, A, B, -1, -1, -1, er, ec, ez
-                };
-                Hull::Triangle down{
-                    (int)hull.size() + 1, 2, id, A, B, -1, -1, -1, -er, -ec, -ez
-                };
-                if (hullK.er * er + hullK.ec * ec + hullK.ez * ez > 0) {
-                    up.bc = k;
-                    down.bc = xy;
-                    xy = up.id;
-                    hullXY = down.id;
-                } else {
-                    down.bc = k;
-                    up.bc = xy;
-                    xy = down.id;
-                    hullXY = up.id;
-                }
-                hull.emplace_back(up);
-                hull.emplace_back(down);
-            }
-        };
         // test ab for visibility from new point
         if (hull[k].c == hull[hull[k].ab].c)
             test_external_edge(
-                hull[k].a, hull[k].b, hull[k].c, hull[k], hull[hull[k].ab].ab,
-                hull[k].ab);
+                pts, hull, id, k, hull[k].a, hull[k].b, hull[k].c, hull[k],
+                hull[hull[k].ab].ab, hull[k].ab);
         // test bc for visibility from new point
         if (hull[k].a == hull[hull[k].bc].a)
             test_external_edge(
-                hull[k].b, hull[k].c, hull[k].a, hull[k], hull[hull[k].bc].bc,
-                hull[k].bc);
+                pts, hull, id, k, hull[k].b, hull[k].c, hull[k].a, hull[k],
+                hull[hull[k].bc].bc, hull[k].bc);
         // test ac for visibility from new point
         if (hull[k].b == hull[hull[k].ac].b)
             test_external_edge(
-                hull[k].a, hull[k].c, hull[k].b, hull[k], hull[hull[k].ac].ac,
-                hull[k].ac);
+                pts, hull, id, k, hull[k].a, hull[k].c, hull[k].b, hull[k],
+                hull[hull[k].ac].ac, hull[k].ac);
     }
 
     // Fix up the non assigned hull adjacencies (correctly).
@@ -322,60 +319,47 @@ void add_coplanar(
                 else
                     hull[norts[s + 1].id].ac = norts[s].id;
                 s++;
-            } else {
-                // internal figure boundary 4 junction case.
-                int s1 = s + 1;
-                int s2 = s + 2;
-                int s3 = s + 3;
-                int id0 = norts[s].id;
-                int id1 = norts[s1].id;
-                int id2 = norts[s2].id;
-                int id3 = norts[s3].id;
-
-                // check normal directions of id and id1..3
-                auto result = hull[id0].er * hull[id1].er +
-                              hull[id0].ec * hull[id1].ec +
-                              hull[id0].ez * hull[id1].ez;
-                if (result <= 0.0F) {
-                    result = hull[id0].er * hull[id2].er +
-                             hull[id0].ec * hull[id2].ec +
-                             hull[id0].ez * hull[id2].ez;
-                    if (result > 0.0F) {
-                        std::swap(id1, id2);
-                        std::swap(s1, s2);
-                    } else {
-                        result = hull[id0].er * hull[id3].er +
-                                 hull[id0].ec * hull[id3].ec +
-                                 hull[id0].ez * hull[id3].ez;
-                        if (result > 0.0F) {
-                            std::swap(id1, id3);
-                            std::swap(s1, s3);
-                        }
-                    }
-                }
-
-                if (norts[s].b == 1)
-                    hull[norts[s].id].ab = norts[s1].id;
-                else
-                    hull[norts[s].id].ac = norts[s1].id;
-
-                if (norts[s1].b == 1)
-                    hull[norts[s1].id].ab = norts[s].id;
-                else
-                    hull[norts[s1].id].ac = norts[s].id;
-
-                // use s2 and s3
-                if (norts[s2].b == 1)
-                    hull[norts[s2].id].ab = norts[s3].id;
-                else
-                    hull[norts[s2].id].ac = norts[s3].id;
-
-                if (norts[s3].b == 1)
-                    hull[norts[s3].id].ab = norts[s2].id;
-                else
-                    hull[norts[s3].id].ac = norts[s2].id;
-                s += 3;
+                continue;
             }
+            // internal figure boundary 4 junction case.
+            int s1 = s + 1;
+            int s2 = s + 2;
+            int s3 = s + 3;
+            int id0 = norts[s].id;
+            int id1 = norts[s1].id;
+            int id2 = norts[s2].id;
+            int id3 = norts[s3].id;
+
+            // check normal directions of id and id1..3
+
+            if (check_direction(id0, id1, hull)) {
+                if (check_direction(id0, id2, hull))
+                    std::swap(id1, id2);
+                else if (check_direction(id0, id3, hull))
+                    std::swap(id1, id3);
+            }
+
+            if (norts[s].b == 1)
+                hull[norts[s].id].ab = norts[s1].id;
+            else
+                hull[norts[s].id].ac = norts[s1].id;
+
+            if (norts[s1].b == 1)
+                hull[norts[s1].id].ab = norts[s].id;
+            else
+                hull[norts[s1].id].ac = norts[s].id;
+
+            // use s2 and s3
+            if (norts[s2].b == 1)
+                hull[norts[s2].id].ab = norts[s3].id;
+            else
+                hull[norts[s2].id].ac = norts[s3].id;
+
+            if (norts[s3].b == 1)
+                hull[norts[s3].id].ab = norts[s2].id;
+            else
+                hull[norts[s3].id].ac = norts[s2].id;
+            s += 3;
         }
     }
 }
@@ -385,21 +369,21 @@ void add_coplanar(
 std::tuple<float, float, float, float> cross_test(
     const std::vector<vec3>& pts, const int& A, const int& B, const int& C,
     const int& X) {
-    const auto Ar = pts[A].x;
-    const auto Ac = pts[A].y;
-    const auto Az = pts[A].z;
+    const auto& Ar = pts[A].x;
+    const auto& Ac = pts[A].y;
+    const auto& Az = pts[A].z;
 
-    const auto Br = pts[B].x;
-    const auto Bc = pts[B].y;
-    const auto Bz = pts[B].z;
+    const auto& Br = pts[B].x;
+    const auto& Bc = pts[B].y;
+    const auto& Bz = pts[B].z;
 
-    const auto Cr = pts[C].x;
-    const auto Cc = pts[C].y;
-    const auto Cz = pts[C].z;
+    const auto& Cr = pts[C].x;
+    const auto& Cc = pts[C].y;
+    const auto& Cz = pts[C].z;
 
-    const auto Xr = pts[X].x;
-    const auto Xc = pts[X].y;
-    const auto Xz = pts[X].z;
+    const auto& Xr = pts[X].x;
+    const auto& Xc = pts[X].y;
+    const auto& Xz = pts[X].z;
 
     const auto ABr = Br - Ar;
     const auto ABc = Bc - Ac;
@@ -424,5 +408,5 @@ std::tuple<float, float, float, float> cross_test(
     // look at sign of (ab x ac).(ab x ax)
     const auto globit = kr * er + kc * ec + kz * ez;
 
-    return { er, ec, ez, globit };
+    return { globit, er, ec, ez };
 }
