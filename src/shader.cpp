@@ -8,7 +8,8 @@ Shader::~Shader() {
     glDeleteProgram(m_programID);
 }
 
-Shader::Shader(const char* const vertexSource, const char* const fragmentSource)
+Shader::Shader(
+    const char* const vertexSource, const char* const fragmentSource) noexcept
     : m_vertexID(glCreateShader(GL_VERTEX_SHADER)),
       m_fragmentID(glCreateShader(GL_FRAGMENT_SHADER)),
       m_programID(glCreateProgram()) {
@@ -33,7 +34,7 @@ Shader::Shader(const char* const vertexSource, const char* const fragmentSource)
     glDetachShader(m_programID, m_fragmentID);
 }
 
-bool Shader::valid() const {
+bool Shader::valid() const noexcept {
     if (m_vertexID == 0 || m_fragmentID == 0 || m_programID == 0)
         return false;
 
@@ -54,13 +55,15 @@ std::string Shader::errorLog() const {
     return log;
 }
 
-void Shader::bind() const { glUseProgram(m_programID); }
+void Shader::bind() const noexcept { glUseProgram(m_programID); }
 
-void Shader::uniformLocation(const int& location, const vec3& vector) const {
+void Shader::uniformLocation(const int& location, const vec3& vector) const
+    noexcept {
     glProgramUniform3f(m_programID, location, vector.x, vector.y, vector.z);
 }
 
-void Shader::uniformLocation(const int& location, const mat4& matrix) const {
+void Shader::uniformLocation(const int& location, const mat4& matrix) const
+    noexcept {
     glProgramUniformMatrix4fv(
         m_programID, location, 1, GL_FALSE, &matrix.data[0][0]);
 }

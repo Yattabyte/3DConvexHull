@@ -6,7 +6,7 @@ Model::~Model() {
     glDeleteVertexArrays(1, &m_vaoID);
 }
 
-Model::Model(const std::vector<vec3>& vertices)
+Model::Model(const std::vector<vec3>& vertices) noexcept
     : m_vertexCount(vertices.size()) {
     // Create GL Objects
     glCreateVertexArrays(1, &m_vaoID);
@@ -24,9 +24,9 @@ Model::Model(const std::vector<vec3>& vertices)
     glVertexArrayVertexBuffer(m_vaoID, 0, m_vboID, 0, sizeof(vec3));
 }
 
-void Model::bind() const { glBindVertexArray(m_vaoID); }
+void Model::bind() const noexcept { glBindVertexArray(m_vaoID); }
 
-void Model::draw(const int& drawMode) const {
+void Model::draw(const int& drawMode) const noexcept {
     glDrawArrays(
         static_cast<GLenum>(drawMode), 0, static_cast<GLsizei>(m_vertexCount));
 }

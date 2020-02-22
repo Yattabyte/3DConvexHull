@@ -5,7 +5,7 @@
 
 Window::~Window() { glfwDestroyWindow(m_window); }
 
-Window::Window(const int& width, const int& height) {
+Window::Window(const int& width, const int& height) noexcept {
     const auto& mainMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     glfwWindowHint(GLFW_RED_BITS, mainMode->redBits);
     glfwWindowHint(GLFW_GREEN_BITS, mainMode->greenBits);
@@ -25,6 +25,6 @@ Window::Window(const int& width, const int& height) {
     m_window = glfwCreateWindow(width, height, "Window", nullptr, nullptr);
 }
 
-bool Window::exists() const { return m_window != nullptr; }
+bool Window::exists() const noexcept { return m_window != nullptr; }
 
-GLFWwindow* Window::pointer() const { return m_window; }
+GLFWwindow* Window::pointer() const noexcept { return m_window; }

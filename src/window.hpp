@@ -16,15 +16,25 @@ struct Window {
     /** Construct a window with a given size.
     @param  width   the width to make the window.
     @param  height  the height to make the window. */
-    Window(const int& width, const int& height);
+    Window(const int& width, const int& height) noexcept;
+    /** Default copy constructor. */
+    Window(const Window& o) = default;
+    /** Default move constructor. */
+    Window(Window&& o) noexcept = default;
+
+    // Operators
+    /** Default copy-assignment operator. */
+    Window& operator=(const Window& p) = default;
+    /** Default move-assignment operator. */
+    Window& operator=(Window&& p) noexcept = default;
 
     // Methods
     /** Check whether or not this window exists and is valid.
     @return     true if window exists, false otherwise. */
-    bool exists() const;
+    bool exists() const noexcept;
     /** Retrieve the underlying window object pointer.
     @return     the GLFWwindow pointer. */
-    GLFWwindow* pointer() const;
+    GLFWwindow* pointer() const noexcept;
 };
 
 #endif // WINDOW_HPP

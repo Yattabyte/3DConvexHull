@@ -7,7 +7,7 @@
 /** A vector of 3 floats. */
 struct vec3 {
     // Attributes
-    float x = 0.0f, y = 0.0f, z = 0.0f;
+    float x = 0.0F, y = 0.0F, z = 0.0F;
 
     // (De)Constructors
     /** Default destruct this vector. */
@@ -15,12 +15,12 @@ struct vec3 {
     /** Default construct this vector. */
     vec3() = default;
     /** Construct a vector using 1 specific value. */
-    explicit vec3(const float& value) : x(value), y(value), z(value) {}
+    explicit vec3(const float& value) noexcept : x(value), y(value), z(value) {}
     /** Construct a vector using 3 specific attributes.
     @param  _x  the x value to use.
     @param  _y  the y value to use.
     @param  _z  the z value to use. */
-    vec3(const float& _x, const float& _y, const float& _z)
+    vec3(const float& _x, const float& _y, const float& _z) noexcept
         : x(_x), y(_y), z(_z) {}
     /** Default copy constructor. */
     vec3(const vec3& o) = default;
@@ -35,23 +35,23 @@ struct vec3 {
     /** Subtract another vector from this one.
     @param  o   the other vector.
     @return     this vector minus the other vector. */
-    vec3 operator-(const vec3& o) const {
+    vec3 operator-(const vec3& o) const noexcept {
         return vec3{ x - o.x, y - o.y, z - o.z };
     }
     /** Add another vector to this one.
     @param  o   the other vector.
     @return     this vector plus the other vector. */
-    vec3 operator+(const vec3& o) const {
+    vec3 operator+(const vec3& o) const noexcept {
         return vec3{ x + o.x, y + o.y, z + o.z };
     }
     /** Divide by another vector.
     @param  o   the other vector.
     @return     this vector divided by the other vector. */
-    vec3 operator/(const vec3& o) const {
+    vec3 operator/(const vec3& o) const noexcept {
         return vec3{ x / o.x, y / o.y, z / o.z };
     }
     /** Compare this vector against another for sorting purposes. */
-    bool operator<(const vec3& other) const {
+    bool operator<(const vec3& other) const noexcept {
         if (z == other.z) {
             if (x == other.x)
                 return y < other.y;
@@ -63,35 +63,35 @@ struct vec3 {
     // Methods
     /** Normalize this vector.
     @return     normalized version of this vector. */
-    vec3 normalize() const { return normalize(*this); }
+    vec3 normalize() const noexcept { return normalize(*this); }
     /** Normalize the supplied vector.
     @param  v   the vector to normalize.
     @return     normalize version of the supplied vector. */
-    static vec3 normalize(const vec3& v) {
-        float length_of_v = sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+    static vec3 normalize(const vec3& v) noexcept {
+        const auto length_of_v = sqrtf((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
         return vec3{ v.x / length_of_v, v.y / length_of_v, v.z / length_of_v };
     }
     /** Calculate the cross product of this vector.
     @param  b   the other vector to cross against.
     @return     cross product of this and the supplied vector. */
-    vec3 cross(const vec3& b) const { return cross(*this, b); }
+    vec3 cross(const vec3& b) const noexcept { return cross(*this, b); }
     /** Calculate the cross product the supplied vectors.
     @param  a   the first vector to cross against.
     @param  b   the second vector to cross against.
     @return     cross product of a and b. */
-    static vec3 cross(const vec3& a, const vec3& b) {
+    static vec3 cross(const vec3& a, const vec3& b) noexcept {
         return vec3{ a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
                      a.x * b.y - a.y * b.x };
     }
     /** Calculate the dot product of this vector.
     @param  b   the other vector to dot against.
     @return     dot product of this and the supplied vector. */
-    float dot(const vec3& b) const { return dot(*this, b); }
+    float dot(const vec3& b) const noexcept { return dot(*this, b); }
     /** Calculate the dot product the supplied vectors.
     @param  a   the first vector to dot against.
     @param  b   the second vector to dot against.
     @return     dot product of a and b. */
-    static float dot(const vec3& a, const vec3& b) {
+    static float dot(const vec3& a, const vec3& b) noexcept {
         return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
     }
 };
@@ -109,7 +109,8 @@ struct mat4 {
     @param  center  the center of the target to look at.
     @aram   up      the up direction.
     @return         a view matrix looking at center from eye. */
-    static mat4 lookAt(const vec3& eye, const vec3& center, const vec3& up) {
+    static mat4
+    lookAt(const vec3& eye, const vec3& center, const vec3& up) noexcept {
         const auto f = (center - eye).normalize();
         auto u = up.normalize();
         const auto s = (f.cross(u)).normalize();
@@ -138,9 +139,9 @@ struct mat4 {
     @return         a perspective projection 4x4 matrix. */
     static mat4 perspective(
         float const& fovY, float const& aspect, float const& zNear,
-        float const& zFar) {
+        float const& zFar) noexcept {
         float const rad = fovY;
-        float tanHalfFovy = tanf(rad / float(2));
+        float tanHalfFovy = tanf(rad / static_cast<float>(2));
 
         mat4 Result;
         Result.data[0][0] = 1.0F / (aspect * tanHalfFovy);

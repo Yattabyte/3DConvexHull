@@ -11,7 +11,7 @@ void add_coplanar(
     const int& pointID);
 std::tuple<float, float, float, float> cross_test(
     const std::vector<vec3>& pts, const int& triA, const int& triB,
-    const int& triC, const int& pointID);
+    const int& triC, const int& pointID) noexcept;
 
 std::vector<vec3> Hull::generate_point_cloud(
     const float& scale, const size_t& count, const unsigned int& seed) {
@@ -105,7 +105,8 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
         int hvis(-1);
 
         // Find the first visible plane.
-        for (int hullID = (int)hull.size() - 1; hullID >= 0; --hullID) {
+        for (int hullID = static_cast<int>(hull.size() - 1ULL); hullID >= 0;
+             --hullID) {
             auto& triangle = hull[hullID];
             const auto delta = point - pts[triangle.a];
             if ((delta.x * triangle.er) + (delta.y * triangle.ec) +
@@ -121,66 +122,70 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
             add_coplanar(pts, hull, pointID);
         else if (hvis >= 0) {
             // New triangular facets formed from neighbouring invisible planes
-            const auto hullSizeStart = (int)hull.size();
-            auto numx = (int)xList.size();
-            const auto facet_adjacent = [&hull, &pts, &point, &xList, &pointID,
-                                         &numx, &middle](
-                                            const auto& hullID,
-                                            const auto& triX, const auto& triY,
-                                            auto& triXY) {
-                // Point on next triangle
-                auto delta(point - pts[triXY.a]);
-                if ((delta.x * triXY.er) + (delta.y * triXY.ec) +
-                        (delta.z * triXY.ez) >
-                    0.0F) {
-                    // Add to list.
-                    if (triXY.keep == 1) {
-                        triXY.keep = 0;
-                        xList.emplace_back(hullID);
-                        numx++;
-                    }
-                } else {
-                    // make normal vector.
-                    Hull::Triangle Tnew{
-                        (int)hull.size(), 2, pointID, triX, triY, -1, hullID, -1
-                    };
-                    const auto dTest1 = pts[Tnew.a] - pts[Tnew.b];
-                    const auto dTest2 = pts[Tnew.a] - pts[Tnew.c];
-                    const auto dCross = dTest1.cross(dTest2);
-
-                    // points from new facet towards 'middle'
-                    delta = middle - point;
-
-                    // make it point outwards.
-                    if ((delta.x * dCross.x) + (delta.y * dCross.y) +
-                            (delta.z * dCross.z) >
+            const auto hullSizeStart = static_cast<int>(hull.size());
+            auto numx = static_cast<int>(xList.size());
+            const auto facet_adjacent =
+                [&hull, &pts, &point, &xList, &pointID, &numx, &middle](
+                    const auto& hullID, const auto& triX, const auto& triY,
+                    auto& triXY) {
+                    // Point on next triangle
+                    auto delta(point - pts[triXY.a]);
+                    if ((delta.x * triXY.er) + (delta.y * triXY.ec) +
+                            (delta.z * triXY.ez) >
                         0.0F) {
-                        Tnew.er = -dCross.x;
-                        Tnew.ec = -dCross.y;
-                        Tnew.ez = -dCross.z;
+                        // Add to list.
+                        if (triXY.keep == 1) {
+                            triXY.keep = 0;
+                            xList.emplace_back(hullID);
+                            numx++;
+                        }
                     } else {
-                        Tnew.er = dCross.x;
-                        Tnew.ec = dCross.y;
-                        Tnew.ez = dCross.z;
+                        // make normal vector.
+                        Hull::Triangle Tnew{ static_cast<int>(hull.size()),
+                                             2,
+                                             pointID,
+                                             triX,
+                                             triY,
+                                             -1,
+                                             hullID,
+                                             -1 };
+                        const auto dTest1 = pts[Tnew.a] - pts[Tnew.b];
+                        const auto dTest2 = pts[Tnew.a] - pts[Tnew.c];
+                        const auto dCross = dTest1.cross(dTest2);
+
+                        // points from new facet towards 'middle'
+                        delta = middle - point;
+
+                        // make it point outwards.
+                        if ((delta.x * dCross.x) + (delta.y * dCross.y) +
+                                (delta.z * dCross.z) >
+                            0.0F) {
+                            Tnew.er = -dCross.x;
+                            Tnew.ec = -dCross.y;
+                            Tnew.ez = -dCross.z;
+                        } else {
+                            Tnew.er = dCross.x;
+                            Tnew.ec = dCross.y;
+                            Tnew.ez = dCross.z;
+                        }
+
+                        // update the touching triangle
+                        if ((triXY.a == triX && triXY.b == triY) ||
+                            (triXY.a == triY && triXY.b == triX))
+                            triXY.ab = static_cast<int>(hull.size());
+                        else if (
+                            (triXY.a == triX && triXY.c == triY) ||
+                            (triXY.a == triY && triXY.c == triX))
+                            triXY.ac = static_cast<int>(hull.size());
+                        else if (
+                            (triXY.b == triX && triXY.c == triY) ||
+                            (triXY.b == triY && triXY.c == triX))
+                            triXY.bc = static_cast<int>(hull.size());
+
+                        // spawn a new triangle.
+                        hull.emplace_back(Tnew);
                     }
-
-                    // update the touching triangle
-                    if ((triXY.a == triX && triXY.b == triY) ||
-                        (triXY.a == triY && triXY.b == triX))
-                        triXY.ab = (int)hull.size();
-                    else if (
-                        (triXY.a == triX && triXY.c == triY) ||
-                        (triXY.a == triY && triXY.c == triX))
-                        triXY.ac = (int)hull.size();
-                    else if (
-                        (triXY.b == triX && triXY.c == triY) ||
-                        (triXY.b == triY && triXY.c == triX))
-                        triXY.bc = (int)hull.size();
-
-                    // spawn a new triangle.
-                    hull.emplace_back(Tnew);
-                }
-            };
+                };
             for (int x = 0; x < numx; ++x) {
                 const auto hullX(hull[xList[x]]);
                 facet_adjacent(hullX.ab, hullX.a, hullX.b, hull[hullX.ab]);
@@ -189,7 +194,7 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
             }
 
             // Patch up the new triangles in hull.
-            const auto hullSizeEnd = (int)hull.size();
+            const auto hullSizeEnd = static_cast<int>(hull.size());
             std::vector<Hull::Snork> norts;
             norts.reserve(hullSizeEnd + 1ULL);
             for (int hullID = hullSizeEnd - 1; hullID >= hullSizeStart;
@@ -229,41 +234,50 @@ std::vector<Hull::Triangle> init_hull3D(const std::vector<vec3>& pts) {
 void test_external_edge(
     const std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull,
     const int& pointID, const int& hullID, const int& triA, const int& triB,
-    const int& triC, const Hull::Triangle& hullK, int& hullXY, int& xy) {
-    const auto [sign, er, ec, ez] = cross_test(pts, triA, triB, triC, pointID);
+    const int& triC, const Hull::Triangle& hullK, int& hullXY, int& triXY) {
+    const auto& [sign, er, ec, ez] = cross_test(pts, triA, triB, triC, pointID);
     if (sign < 0.0F) {
-        Hull::Triangle up{
-            (int)hull.size(), 2, pointID, triA, triB, -1, -1, -1, er, ec, ez
-        };
-        Hull::Triangle down{ (int)hull.size() + 1,
-                             2,
-                             pointID,
-                             triA,
-                             triB,
-                             -1,
-                             -1,
-                             -1,
-                             -er,
-                             -ec,
-                             -ez };
+        Hull::Triangle upTriangle{ static_cast<int>(hull.size()),
+                                   2,
+                                   pointID,
+                                   triA,
+                                   triB,
+                                   -1,
+                                   -1,
+                                   -1,
+                                   er,
+                                   ec,
+                                   ez };
+        Hull::Triangle downTriangle{ static_cast<int>(hull.size() + 1ULL),
+                                     2,
+                                     pointID,
+                                     triA,
+                                     triB,
+                                     -1,
+                                     -1,
+                                     -1,
+                                     -er,
+                                     -ec,
+                                     -ez };
         if (hullK.er * er + hullK.ec * ec + hullK.ez * ez > 0) {
-            up.bc = hullID;
-            down.bc = xy;
-            xy = up.id;
-            hullXY = down.id;
+            upTriangle.bc = hullID;
+            downTriangle.bc = triXY;
+            triXY = upTriangle.id;
+            hullXY = downTriangle.id;
         } else {
-            down.bc = hullID;
-            up.bc = xy;
-            xy = down.id;
-            hullXY = up.id;
+            downTriangle.bc = hullID;
+            upTriangle.bc = triXY;
+            triXY = downTriangle.id;
+            hullXY = upTriangle.id;
         }
-        hull.emplace_back(up);
-        hull.emplace_back(down);
+        hull.emplace_back(upTriangle);
+        hull.emplace_back(downTriangle);
     }
 };
 
 bool check_direction(
-    const int& idA, const int& idB, const std::vector<Hull::Triangle>& hull) {
+    const int& idA, const int& idB,
+    const std::vector<Hull::Triangle>& hull) noexcept {
     return (hull[idA].er * hull[idB].er) + (hull[idA].ec * hull[idB].ec) +
                (hull[idA].ez * hull[idB].ez) >
            0.0F;
@@ -274,7 +288,7 @@ void add_coplanar(
     const std::vector<vec3>& pts, std::vector<Hull::Triangle>& hull,
     const int& pointID) {
     // Find visible edges. from external edges.
-    const auto numh = (int)hull.size();
+    const auto numh = static_cast<int>(hull.size());
     for (int hullID = 0; hullID < numh; ++hullID) {
         // Test AB for visibility from new point
         if (hull[hullID].c == hull[hull[hullID].ab].c)
@@ -299,7 +313,8 @@ void add_coplanar(
     // Fix up the non assigned hull adjacencies (correctly).
     std::vector<Hull::Snork> norts;
     norts.reserve(hull.size() + 1ULL);
-    for (int hullID = (int)hull.size() - 1; hullID >= numh; --hullID) {
+    for (int hullID = static_cast<int>(hull.size() - 1ULL); hullID >= numh;
+         --hullID) {
         if (hull[hullID].keep > 1) {
             norts.emplace_back(Hull::Snork{ hullID, hull[hullID].b, 1 });
             norts.emplace_back(Hull::Snork{ hullID, hull[hullID].c, 0 });
@@ -310,65 +325,62 @@ void add_coplanar(
         return;
 
     std::sort(norts.begin(), norts.end());
-    const auto startSize = (int)norts.size();
+    const auto startSize = static_cast<int>(norts.size());
     norts.emplace_back(Hull::Snork{ -1, -1, -1 });
     norts.emplace_back(Hull::Snork{ -2, -2, -2 });
 
     for (int nortID = 0; nortID < startSize - 1; ++nortID) {
-        if (norts[nortID].a != norts[nortID + 1].a)
+        if (norts[nortID].a != norts[nortID + 1ULL].a)
             continue;
 
         // Link triangle sides.
-        if (norts[nortID].a != norts[nortID + 2].a) {
+        if (norts[nortID].a != norts[nortID + 2ULL].a) {
             // edge of figure case
             if (norts[nortID].b == 1)
-                hull[norts[nortID].id].ab = norts[nortID + 1].id;
+                hull[norts[nortID].id].ab = norts[nortID + 1ULL].id;
             else
-                hull[norts[nortID].id].ac = norts[nortID + 1].id;
-            if (norts[nortID + 1].b == 1)
-                hull[norts[nortID + 1].id].ab = norts[nortID].id;
+                hull[norts[nortID].id].ac = norts[nortID + 1ULL].id;
+            if (norts[nortID + 1ULL].b == 1)
+                hull[norts[nortID + 1ULL].id].ab = norts[nortID].id;
             else
-                hull[norts[nortID + 1].id].ac = norts[nortID].id;
+                hull[norts[nortID + 1ULL].id].ac = norts[nortID].id;
             nortID++;
             continue;
         }
         // Internal figure boundary 4 junction case.
-        int s1 = nortID + 1;
-        int s2 = nortID + 2;
-        int s3 = nortID + 3;
-        int id0 = norts[nortID].id;
-        int id1 = norts[s1].id;
-        int id2 = norts[s2].id;
-        int id3 = norts[s3].id;
+        auto& snork0 = norts[nortID];
+        auto& snork1 = norts[nortID + 1ULL];
+        auto& snork2 = norts[nortID + 2ULL];
+        auto& snork3 = norts[nortID + 3ULL];
 
         // Check normal directions of id and id1..3
-        if (check_direction(id0, id1, hull)) {
-            if (check_direction(id0, id2, hull))
-                std::swap(id1, id2);
-            else if (check_direction(id0, id3, hull))
-                std::swap(id1, id3);
+        if (check_direction(snork0.id, snork1.id, hull)) {
+            if (check_direction(snork0.id, snork2.id, hull))
+                std::swap(snork1.id, snork2.id);
+            else if (check_direction(snork0.id, snork2.id, hull))
+                std::swap(snork1.id, snork3.id);
         }
 
         if (norts[nortID].b == 1)
-            hull[norts[nortID].id].ab = norts[s1].id;
+            hull[snork0.id].ab = snork1.id;
         else
-            hull[norts[nortID].id].ac = norts[s1].id;
+            hull[snork0.id].ac = snork1.id;
 
-        if (norts[s1].b == 1)
-            hull[norts[s1].id].ab = norts[nortID].id;
+        if (snork1.b == 1)
+            hull[snork1.id].ab = snork0.id;
         else
-            hull[norts[s1].id].ac = norts[nortID].id;
+            hull[snork1.id].ac = snork0.id;
 
         // Use s2 and s3
-        if (norts[s2].b == 1)
-            hull[norts[s2].id].ab = norts[s3].id;
+        if (snork2.b == 1)
+            hull[snork2.id].ab = snork3.id;
         else
-            hull[norts[s2].id].ac = norts[s3].id;
+            hull[snork2.id].ac = snork3.id;
 
-        if (norts[s3].b == 1)
-            hull[norts[s3].id].ab = norts[s2].id;
+        if (snork3.b == 1)
+            hull[snork3.id].ab = snork2.id;
         else
-            hull[norts[s3].id].ac = norts[s2].id;
+            hull[snork3.id].ac = snork2.id;
         nortID += 3;
     }
 }
@@ -376,7 +388,7 @@ void add_coplanar(
 // Cross product relative sign test.
 std::tuple<float, float, float, float> cross_test(
     const std::vector<vec3>& pts, const int& triA, const int& triB,
-    const int& triC, const int& pointID) {
+    const int& triC, const int& pointID) noexcept {
     const auto& pointA(pts[triA]);
     const auto& pointB(pts[triB]);
     const auto& pointC(pts[triC]);

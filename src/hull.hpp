@@ -19,7 +19,7 @@ struct Triangle {
     // Operators
     /** Compare whether or not this triangle equals another.
     @param  t   the other triangle to compare against. */
-    bool operator==(const Triangle& t) const {
+    bool operator==(const Triangle& t) const noexcept {
         return (
             (a == t.a || a == t.b || a == t.c) &&
             (b == t.a || b == t.b || b == t.c) &&
@@ -30,13 +30,13 @@ struct Triangle {
     /** Check if this triangle faces the same direction as another.
     @param  other   the other triangle to compare against.
     @return true if this triangle faces the same direction, false otherwise. */
-    bool FaceSameDirection(const Triangle& other) const {
+    bool FaceSameDirection(const Triangle& other) const noexcept {
         return (er == other.er && ec == other.ec && ez == other.ez);
     }
     /** Checks if this triangle is adjacent to another.
     @param  other   the other triangle to compare against.
     @return true if this triangle is adjacent to another, false otherwise. */
-    bool AreAdjacent(const Triangle& other) const {
+    bool AreAdjacent(const Triangle& other) const noexcept {
         return (
             a == other.ab || a == other.bc || a == other.ac || b == other.ab ||
             b == other.bc || b == other.ac || c == other.ab || c == other.bc ||
@@ -44,7 +44,7 @@ struct Triangle {
     }
     /** Compute the normal for this triangle.
     @return the normal vector for this triangle. */
-    vec3 normal() const { return vec3(er, ec, ez); }
+    vec3 normal() const noexcept { return vec3(er, ec, ez); }
 };
 
 struct Snork {
@@ -53,7 +53,7 @@ struct Snork {
     int a = 0, b = 0;
 
     // Operators
-    bool operator<(const Snork& other) const {
+    bool operator<(const Snork& other) const noexcept {
         if (a == other.a)
             return b < other.b;
         return a < other.a;
