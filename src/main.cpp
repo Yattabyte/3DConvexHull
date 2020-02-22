@@ -103,7 +103,7 @@ int main() {
 
     // Make models
     const auto pointCloud = Hull::generate_point_cloud(
-        7.5F, 12800, static_cast<unsigned int>(glfwGetTime()));
+        7.5F, 128, static_cast<unsigned int>(glfwGetTime()));
     const Model hullModel(Hull::generate_convex_hull(pointCloud));
     const Model cloudModel(pointCloud);
 
