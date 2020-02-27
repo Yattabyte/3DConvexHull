@@ -6,11 +6,9 @@
 struct GLFWwindow;
 
 /** A representation of a GLFW window object. */
-struct Window {
-    // Attributes
-    GLFWwindow* m_window = nullptr;
-
-    // (De)Constructors
+class Window {
+    public:
+    // Public (De)Constructors
     /** Destroy this window. */
     ~Window();
     /** Construct a window with a given size.
@@ -22,19 +20,23 @@ struct Window {
     /** Default move constructor. */
     Window(Window&& o) noexcept = default;
 
-    // Operators
+    // Public Operators
     /** Default copy-assignment operator. */
     Window& operator=(const Window& p) = default;
     /** Default move-assignment operator. */
     Window& operator=(Window&& p) noexcept = default;
 
-    // Methods
+    // Public Methods
     /** Check whether or not this window exists and is valid.
     @return     true if window exists, false otherwise. */
     bool exists() const noexcept;
     /** Retrieve the underlying window object pointer.
     @return     the GLFWwindow pointer. */
     GLFWwindow* pointer() const noexcept;
+
+    private:
+    // Private Attributes
+    GLFWwindow* m_window = nullptr;
 };
 
 #endif // WINDOW_HPP

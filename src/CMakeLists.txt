@@ -7,7 +7,8 @@ set(Module srcCode)
 set(FILES
     # Header files
     ${PROJECT_SOURCE_DIR}/external/glad/glad.h
-    geometry.hpp
+    vec.hpp
+    mat.hpp
     hull.hpp
     model.hpp
     shader.hpp
@@ -41,7 +42,6 @@ endif()
 
 # Set all project settings
 target_compile_Definitions(${Module} PRIVATE $<$<CONFIG:DEBUG>:DEBUG>)
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${Module})
 set_target_properties(${Module} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
     LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
@@ -49,3 +49,5 @@ set_target_properties(${Module} PROPERTIES
     PDB_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
     VERSION ${PROJECT_VERSION}
 )
+
+add_test(NAME SourceTest COMMAND ${Module})

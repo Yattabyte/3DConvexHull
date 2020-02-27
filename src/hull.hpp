@@ -1,7 +1,8 @@
 #ifndef HULL_HPP
 #define HULL_HPP
 
-#include "geometry.hpp"
+#include "mat.hpp"
+#include "vec.hpp"
 #include <vector>
 
 /** Namespace encapsulating all hull-related operations. */

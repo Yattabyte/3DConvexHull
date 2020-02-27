@@ -11,6 +11,7 @@ Window::Window(const int& width, const int& height) noexcept {
     glfwWindowHint(GLFW_GREEN_BITS, mainMode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, mainMode->blueBits);
     glfwWindowHint(GLFW_ALPHA_BITS, 0);
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_CONTEXT_ROBUSTNESS, GLFW_NO_RESET_NOTIFICATION);

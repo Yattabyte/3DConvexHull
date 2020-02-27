@@ -1,8 +1,9 @@
 #define GLFW_INCLUDE_NONE
-#include "geometry.hpp"
 #include "hull.hpp"
+#include "mat.hpp"
 #include "model.hpp"
 #include "shader.hpp"
+#include "vec.hpp"
 #include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
@@ -29,8 +30,8 @@ constexpr auto const vertCode = R"END(
 constexpr auto const fragCode = R"END(
     #version 430
 
-    layout (location = 0) out vec3 fragColor;
-    layout (location = 12) uniform vec3 color;
+    layout (location = 0) out vec4 fragColor;
+    layout (location = 12) uniform vec4 color;
 
     void main() {
         fragColor = color;
@@ -38,7 +39,7 @@ constexpr auto const fragCode = R"END(
 )END";
 
 /** Report an error and shutdown. */
-void error_shutdown(const char* errorMsg) {
+void error_shutdown(const std::string& errorMsg) {
     std::cout << errorMsg;
     glfwTerminate();
     exit(-1);
@@ -46,7 +47,7 @@ void error_shutdown(const char* errorMsg) {
 
 void render_loop_func(
     const double& deltaTime, double& rotation, const Shader& shader,
-    const Model& hullModel, const Model& cloudModel) {
+    const Model& hullModel, const Model& cloudModel) noexcept {
     // Update rotation based on deltaTime
     rotation += deltaTime * 2.5F;
 
@@ -58,22 +59,44 @@ void render_loop_func(
         vec3{ distance * sinf(static_cast<float>(rotation) / math_pi), 0,
               distance * cosf(static_cast<float>(rotation) / math_pi) },
         vec3{ 0, 0, 0 }, vec3{ 0, 1, 0 });
-    const auto mMatrix = mat4{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+    const auto mMatrix = mat4();
 
-    // Send data to GPU
+    // Flush buffers and set starting parameters
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDepthFunc(GL_LEQUAL);
+
+    // Draw Gray Hull Back-face
+    glBlendFunc(GL_ONE, GL_ZERO);
     shader.uniformLocation(0, pMatrix);
     shader.uniformLocation(4, vMatrix);
     shader.uniformLocation(8, mMatrix);
-    shader.uniformLocation(12, vec3{ 1, 1, 1 });
-
-    // Draw hull white
-    glClear(GL_COLOR_BUFFER_BIT);
+    shader.uniformLocation(12, vec4{ 0.25F });
     shader.bind();
     hullModel.bind();
     hullModel.draw(GL_TRIANGLES);
 
-    // Bind point cloud model and draw red
-    shader.uniformLocation(12, vec3{ 1, 0, 0 });
+    // Draw internal point cloud model
+    glDepthFunc(GL_ALWAYS);
+    shader.uniformLocation(12, vec4{ 1, 0.25F, 0.25F, 1 });
+    cloudModel.bind();
+    cloudModel.draw(GL_POINTS);
+
+    // Draw Hull White front-face
+    glDepthFunc(GL_LEQUAL);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    shader.uniformLocation(12, vec4{ 1, 1, 1, 0.25F });
+    hullModel.bind();
+    hullModel.draw(GL_TRIANGLES);
+
+    // Draw triangle outline
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    shader.uniformLocation(12, vec4{ 0.2F, 0.5F, 1, 1 });
+    hullModel.draw(GL_TRIANGLES);
+
+    // Draw outside points
+    shader.uniformLocation(12, vec4{ 0.5F, 1, 0.2F, 1 });
     cloudModel.bind();
     cloudModel.draw(GL_POINTS);
 }
@@ -96,28 +119,34 @@ int main() {
 
     // Make shaders
     const Shader shader(vertCode, fragCode);
-    if (!shader.valid()) {
-        const auto errorLog(shader.errorLog());
-        error_shutdown(errorLog.c_str());
-    }
+    if (!shader.valid())
+        error_shutdown(shader.errorLog());
 
     // Make models
-    const auto pointCloud = Hull::generate_point_cloud(
-        7.5F, 128, static_cast<unsigned int>(glfwGetTime()));
+    const auto seed(static_cast<unsigned int>(glfwGetTime()));
+    const auto pointCloud(Hull::generate_point_cloud(7.5F, 512, seed));
     const Model hullModel(Hull::generate_convex_hull(pointCloud));
     const Model cloudModel(pointCloud);
 
-    // Enable point rendering
+    // Enable point rendering and blending
     glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glLineWidth(4.0F);
 
     // Main Loop
-    double lastTime(0.0F);
-    double rotation(0.0F);
-    while (glfwWindowShouldClose(window.pointer()) == 0) {
+    double lastTime(0.0);
+    double rotation(0.0);
+    double timeAccumulator(0.0);
+    while (glfwWindowShouldClose(window.pointer()) == 0 &&
+           timeAccumulator <= 10.0) {
         const auto time = glfwGetTime();
-        render_loop_func(
-            time - lastTime, rotation, shader, hullModel, cloudModel);
+        const auto deltaTime = time - lastTime;
+        render_loop_func(deltaTime, rotation, shader, hullModel, cloudModel);
         lastTime = time;
+        timeAccumulator += deltaTime;
         glfwPollEvents();
         glfwSwapBuffers(window.pointer());
     }
