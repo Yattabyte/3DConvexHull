@@ -62,28 +62,28 @@ class vec3 {
     // Methods
     /** Get the X component of this vector.
     @return     reference to the X component. */
-    inline float& x() noexcept { return m_data[0]; }
+    float& x() noexcept { return m_data[0]; }
     /** Get the const X component of this vector.
     @return     const reference to the X component. */
-    inline const float& x() const noexcept { return m_data[0]; }
+    const float& x() const noexcept { return m_data[0]; }
     /** Get the Y component of this vector.
     @return     reference to the Y component. */
-    inline float& y() noexcept { return m_data[1]; }
+    float& y() noexcept { return m_data[1]; }
     /** Get the const Y component of this vector.
     @return     const reference to the Y component. */
-    inline const float& y() const noexcept { return m_data[1]; }
+    const float& y() const noexcept { return m_data[1]; }
     /** Get the Z component of this vector.
     @return     reference to the Z component. */
-    inline float& z() noexcept { return m_data[2]; }
+    float& z() noexcept { return m_data[2]; }
     /** Get the const Z component of this vector.
     @return     const reference to the Z component. */
-    inline const float& z() const noexcept { return m_data[2]; }
+    const float& z() const noexcept { return m_data[2]; }
     /** Get a pointer to the underlying data container.
     @return     pointer to the data array. */
-    inline float* const data() noexcept { return &m_data[0]; }
+    float* const data() noexcept { return &m_data[0]; }
     /** Get a const pointer to the underlying data container.
     @return     pointer to the data array. */
-    inline const float* const data() const noexcept { return &m_data[0]; }
+    const float* const data() const noexcept { return &m_data[0]; }
     /** Normalize this vector.
     @return     normalized version of this vector. */
     vec3 normalize() const noexcept { return normalize(*this); }
@@ -177,34 +177,34 @@ class vec4 {
     // Public Methods
     /** Get the X component of this vector.
     @return     reference to the X component. */
-    inline float& x() noexcept { return m_data[0]; }
+    float& x() noexcept { return m_data[0]; }
     /** Get the const X component of this vector.
     @return     const reference to the X component. */
-    inline const float& x() const noexcept { return m_data[0]; }
+    const float& x() const noexcept { return m_data[0]; }
     /** Get the Y component of this vector.
     @return     reference to the Y component. */
-    inline float& y() noexcept { return m_data[1]; }
+    float& y() noexcept { return m_data[1]; }
     /** Get the const Y component of this vector.
     @return     const reference to the Y component. */
-    inline const float& y() const noexcept { return m_data[1]; }
+    const float& y() const noexcept { return m_data[1]; }
     /** Get the Z component of this vector.
     @return     reference to the Z component. */
-    inline float& z() noexcept { return m_data[2]; }
+    float& z() noexcept { return m_data[2]; }
     /** Get the const Z component of this vector.
     @return     const reference to the Z component. */
-    inline const float& z() const noexcept { return m_data[2]; }
+    const float& z() const noexcept { return m_data[2]; }
     /** Get the W component of this vector.
     @return     reference to the W component. */
-    inline float& w() noexcept { return m_data[3]; }
+    float& w() noexcept { return m_data[3]; }
     /** Get the const W component of this vector.
     @return     const reference to the W component. */
-    inline const float& w() const noexcept { return m_data[3]; }
+    const float& w() const noexcept { return m_data[3]; }
     /** Get a pointer to the underlying data container.
     @return     pointer to the data array. */
-    inline float* const data() noexcept { return &m_data[0]; }
+    float* const data() noexcept { return &m_data[0]; }
     /** Get a const pointer to the underlying data container.
     @return     pointer to the data array. */
-    inline const float* const data() const noexcept { return &m_data[0]; }
+    const float* const data() const noexcept { return &m_data[0]; }
     /** Normalize this vector.
     @return     normalized version of this vector. */
     vec4 normalize() const noexcept { return normalize(*this); }

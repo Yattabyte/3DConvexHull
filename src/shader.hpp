@@ -59,6 +59,7 @@ class Shader {
     unsigned int m_vertexID = 0U;
     unsigned int m_fragmentID = 0U;
     unsigned int m_programID = 0U;
+    std::string m_log;
 };
 
 #endif // SHADER_HPP

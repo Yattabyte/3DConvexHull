@@ -29,6 +29,13 @@ Shader::Shader(
     glLinkProgram(m_programID);
 
     // Validate program
+    GLint param(0);
+    if (glGetProgramiv(m_programID, GL_INFO_LOG_LENGTH, &param); param != 0) {
+        std::vector<GLchar> infoLog(param);
+        glGetProgramInfoLog(
+            m_programID, static_cast<GLsizei>(param), nullptr, &infoLog[0]);
+        m_log = infoLog.data();
+    }
     glValidateProgram(m_programID);
     glDetachShader(m_programID, m_vertexID);
     glDetachShader(m_programID, m_fragmentID);
@@ -43,17 +50,7 @@ bool Shader::valid() const noexcept {
     return param != 0;
 }
 
-std::string Shader::errorLog() const {
-    std::string log;
-    GLint param;
-    if (glGetProgramiv(m_programID, GL_INFO_LOG_LENGTH, &param); param != 0) {
-        std::vector<GLchar> infoLog(param);
-        glGetProgramInfoLog(
-            m_programID, static_cast<GLsizei>(param), nullptr, &infoLog[0]);
-        log = infoLog.data();
-    }
-    return log;
-}
+std::string Shader::errorLog() const { return m_log; }
 
 void Shader::bind() const noexcept { glUseProgram(m_programID); }
 
