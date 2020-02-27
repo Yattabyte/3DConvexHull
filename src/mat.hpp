@@ -32,10 +32,10 @@ class mat4 {
     // Public Methods
     /** Get a pointer to the underlying data container.
     @return     pointer to the data array. */
-    float* const data() noexcept { return &m_data[0][0]; }
+    float* data() noexcept { return &m_data[0][0]; }
     /** Get a const pointer to the underlying data container.
     @return     pointer to the data array. */
-    const float* const data() const noexcept { return &m_data[0][0]; }
+    const float* data() const noexcept { return &m_data[0][0]; }
     /** Create a transform matrix looking at a point a given another point.
     @param  eye     the eye position.
     @param  center  the center of the target to look at.

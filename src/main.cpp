@@ -213,38 +213,42 @@ int main() {
         error_shutdown("Failed to initialize OpenGL context.\n");
     register_debug();
 
-    // Make shaders
-    const Shader shader(vertCode, fragCode);
-    if (!shader.valid())
-        error_shutdown(shader.errorLog());
+    // Create objects within scope
+    {
+        // Make shaders
+        const Shader shader(vertCode, fragCode);
+        if (!shader.valid())
+            error_shutdown(shader.errorLog());
 
-    // Make models
-    const auto seed(static_cast<unsigned int>(glfwGetTime()));
-    const auto pointCloud(Hull::generate_point_cloud(7.5F, 512, seed));
-    const Model hullModel(Hull::generate_convex_hull(pointCloud));
-    const Model cloudModel(pointCloud);
+        // Make models
+        const auto seed(static_cast<unsigned int>(glfwGetTime()));
+        const auto pointCloud(Hull::generate_point_cloud(7.5F, 512, seed));
+        const Model hullModel(Hull::generate_convex_hull(pointCloud));
+        const Model cloudModel(pointCloud);
 
-    // Enable point rendering and blending
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glLineWidth(4.0F);
+        // Enable point rendering and blending
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        glEnable(GL_LINE_SMOOTH);
+        glEnable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glLineWidth(4.0F);
 
-    // Main Loop
-    double lastTime(0.0);
-    double rotation(0.0);
-    double timeAccumulator(0.0);
-    while (glfwWindowShouldClose(window.pointer()) == 0 &&
-           timeAccumulator <= 10.0) {
-        const auto time = glfwGetTime();
-        const auto deltaTime = time - lastTime;
-        render_loop_func(deltaTime, rotation, shader, hullModel, cloudModel);
-        lastTime = time;
-        timeAccumulator += deltaTime;
-        glfwPollEvents();
-        glfwSwapBuffers(window.pointer());
+        // Main Loop
+        double lastTime(0.0);
+        double rotation(0.0);
+        double timeAccumulator(0.0);
+        while (glfwWindowShouldClose(window.pointer()) == 0 &&
+               timeAccumulator <= 10.0) {
+            const auto time = glfwGetTime();
+            const auto deltaTime = time - lastTime;
+            render_loop_func(
+                deltaTime, rotation, shader, hullModel, cloudModel);
+            lastTime = time;
+            timeAccumulator += deltaTime;
+            glfwPollEvents();
+            glfwSwapBuffers(window.pointer());
+        }
     }
 
     // Success

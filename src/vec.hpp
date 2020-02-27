@@ -80,10 +80,10 @@ class vec3 {
     const float& z() const noexcept { return m_data[2]; }
     /** Get a pointer to the underlying data container.
     @return     pointer to the data array. */
-    float* const data() noexcept { return &m_data[0]; }
+    float* data() noexcept { return &m_data[0]; }
     /** Get a const pointer to the underlying data container.
     @return     pointer to the data array. */
-    const float* const data() const noexcept { return &m_data[0]; }
+    const float* data() const noexcept { return &m_data[0]; }
     /** Normalize this vector.
     @return     normalized version of this vector. */
     vec3 normalize() const noexcept { return normalize(*this); }
@@ -201,10 +201,10 @@ class vec4 {
     const float& w() const noexcept { return m_data[3]; }
     /** Get a pointer to the underlying data container.
     @return     pointer to the data array. */
-    float* const data() noexcept { return &m_data[0]; }
+    float* data() noexcept { return &m_data[0]; }
     /** Get a const pointer to the underlying data container.
     @return     pointer to the data array. */
-    const float* const data() const noexcept { return &m_data[0]; }
+    const float* data() const noexcept { return &m_data[0]; }
     /** Normalize this vector.
     @return     normalized version of this vector. */
     vec4 normalize() const noexcept { return normalize(*this); }
