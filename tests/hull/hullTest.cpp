@@ -50,9 +50,8 @@ void cloudTest(const std::vector<vec3>& pointCloud) {
         if (min.z() > point.z())
             min.z() = point.z();
     }
-    const auto delta = max - min;
-    const auto actualScale = (delta.x() + delta.y() + delta.z()) / 6.0F;
-    assert(ceil(actualScale) == ceil(scale));
+    [[maybe_unused]] const auto delta = max - min;
+    assert(ceil((delta.x() + delta.y() + delta.z()) / 6.0F) == ceil(scale));
 
     // Ensure deterministic point cloud
     assert(
@@ -62,7 +61,8 @@ void cloudTest(const std::vector<vec3>& pointCloud) {
 
 void hullTest(const std::vector<vec3>& pointCloud) {
     // Attempt to generate a convex hull
-    const auto convexHull(Hull::generate_convex_hull(pointCloud));
+    [[maybe_unused]] const auto convexHull(
+        Hull::generate_convex_hull(pointCloud));
 
     // Ensure we have actually have a hull
     assert(!convexHull.empty());

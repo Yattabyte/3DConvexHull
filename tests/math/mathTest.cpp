@@ -66,7 +66,7 @@ void vec4Test() noexcept {
 
 void mat4Test() noexcept {
     // Ensure default matrix is an identity matrix
-    mat4 matrix;
+    [[maybe_unused]] mat4 matrix;
     assert(
         matrix == mat4(
                       vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0),
@@ -79,9 +79,10 @@ void mat4Test() noexcept {
     assert(matrix.data() == &matrix[0].x());
     assert(&matrix[0].x() + 15ULL == &matrix[3].w());
 
-    const auto pMatrix = mat4::perspective(1.5708F, 1.0F, 0.01F, 10.0F);
-    const auto vMatrix =
+    [[maybe_unused]] const auto pMatrix =
+        mat4::perspective(1.5708F, 1.0F, 0.01F, 10.0F);
+    [[maybe_unused]] const auto vMatrix =
         mat4::lookAt(vec3(0, 0, -10), vec3(0, 0, 0), vec3(0, 1, 0));
-    const auto mMatrix = mat4();
+    [[maybe_unused]] const auto mMatrix = mat4();
     // const auto MVP = pMatrix * vMatrix * mMatrix;
 }
