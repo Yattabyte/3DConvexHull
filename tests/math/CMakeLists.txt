@@ -1,33 +1,18 @@
-###########
-### SRC ###
-###########
-set(Module srcCode)
-
-# Configure and acquire files
-set(FILES
-    # Header files
-    ${PROJECT_SOURCE_DIR}/external/glad/glad.h
-    vec.hpp
-    mat.hpp
-    hull.hpp
-    model.hpp
-    shader.hpp
-    window.hpp
-
-    # Source files
-    ${PROJECT_SOURCE_DIR}/external/glad/glad.c
-    hull.cpp
-    main.cpp
-    model.cpp
-    shader.cpp
-    window.cpp
-)
+#################
+### Math Test ###
+#################
+set(Module MathTest)
 
 # Create Library using the supplied files
+set(FILES
+    ${PROJECT_SOURCE_DIR}/src/mat.hpp
+    ${PROJECT_SOURCE_DIR}/src/vec.hpp
+    mathTest.cpp
+)
 add_executable(${Module} ${FILES})
 target_include_directories(${Module}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-    PUBLIC ${PROJECT_SOURCE_DIR}/external
+    PUBLIC ${PROJECT_SOURCE_DIR}/src
 )
 
 # Add library dependencies
@@ -49,3 +34,5 @@ set_target_properties(${Module} PROPERTIES
     PDB_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
     VERSION ${PROJECT_VERSION}
 )
+
+add_test(NAME MathTest COMMAND ${Module})

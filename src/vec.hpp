@@ -31,17 +31,23 @@ class vec3 {
     vec3& operator=(const vec3& p) = default;
     /** Default move-assignment operator. */
     vec3& operator=(vec3&& p) noexcept = default;
+    /** Add another vector to this one.
+    @param  o   the other vector.
+    @return     this vector plus the other vector. */
+    vec3 operator+(const vec3& o) const noexcept {
+        return vec3{ x() + o.x(), y() + o.y(), z() + o.z() };
+    }
     /** Subtract another vector from this one.
     @param  o   the other vector.
     @return     this vector minus the other vector. */
     vec3 operator-(const vec3& o) const noexcept {
         return vec3{ x() - o.x(), y() - o.y(), z() - o.z() };
     }
-    /** Add another vector to this one.
+    /** Multiply by another vector.
     @param  o   the other vector.
-    @return     this vector plus the other vector. */
-    vec3 operator+(const vec3& o) const noexcept {
-        return vec3{ x() + o.x(), y() + o.y(), z() + o.z() };
+    @return     this vector multiplied by the other vector. */
+    vec3 operator*(const vec3& o) const noexcept {
+        return vec3{ x() * o.x(), y() * o.y(), z() * o.z() };
     }
     /** Divide by another vector.
     @param  o   the other vector.
@@ -49,7 +55,12 @@ class vec3 {
     vec3 operator/(const vec3& o) const noexcept {
         return vec3{ x() / o.x(), y() / o.y(), z() / o.z() };
     }
-    /** Compare this vector against another for sorting purposes. */
+    /** Negative Operator
+    @return     negative version of this vector. */
+    vec3 operator-() const noexcept { return vec3{ -x(), -y(), -z() }; }
+    /** Compare this vector against another for sorting purposes.
+    @param  o   the other vector.
+    @return     true if this vector is less than the other vector. */
     bool operator<(const vec3& other) const noexcept {
         if (z() == other.z()) {
             if (x() == other.x())
@@ -58,6 +69,16 @@ class vec3 {
         }
         return z() < other.z();
     };
+    /** Compare against another vector.
+    @param  o   the other vector.
+    @return     true if this equals the other vector, false otherwise. */
+    bool operator==(const vec3& o) const noexcept {
+        return x() == o.x() && y() == o.y() && z() == o.z();
+    }
+    /** Compare against another vector.
+    @param  o   the other vector.
+    @return     true if this doesn't equal the other vector, false otherwise. */
+    bool operator!=(const vec3& o) const noexcept { return !(*this == o); }
 
     // Methods
     /** Get the X component of this vector.
@@ -155,17 +176,23 @@ class vec4 {
     vec4& operator=(const vec4& p) = default;
     /** Default move-assignment operator. */
     vec4& operator=(vec4&& p) noexcept = default;
+    /** Add another vector to this one.
+    @param  o   the other vector.
+    @return     this vector plus the other vector. */
+    vec4 operator+(const vec4& o) const noexcept {
+        return vec4{ x() + o.x(), y() + o.y(), z() + o.z(), w() + o.w() };
+    }
     /** Subtract another vector from this one.
     @param  o   the other vector.
     @return     this vector minus the other vector. */
     vec4 operator-(const vec4& o) const noexcept {
         return vec4{ x() - o.x(), y() - o.y(), z() - o.z(), w() - o.w() };
     }
-    /** Add another vector to this one.
+    /** Multiply by another vector.
     @param  o   the other vector.
-    @return     this vector plus the other vector. */
-    vec4 operator+(const vec4& o) const noexcept {
-        return vec4{ x() + o.x(), y() + o.y(), z() + o.z(), w() + o.w() };
+    @return     this vector multiplied by the other vector. */
+    vec4 operator*(const vec4& o) const noexcept {
+        return vec4{ x() * o.x(), y() * o.y(), z() * o.z(), w() * o.w() };
     }
     /** Divide by another vector.
     @param  o   the other vector.
@@ -173,6 +200,19 @@ class vec4 {
     vec4 operator/(const vec4& o) const noexcept {
         return vec4{ x() / o.x(), y() / o.y(), z() / o.z(), w() / o.w() };
     }
+    /** Negative Operator
+    @return     negative version of this vector. */
+    vec4 operator-() const noexcept { return vec4{ -x(), -y(), -z(), -w() }; }
+    /** Compare against another vector.
+    @param  o   the other vector.
+    @return     true if this equals the other vector, false otherwise. */
+    bool operator==(const vec4& o) const noexcept {
+        return x() == o.x() && y() == o.y() && z() == o.z() && w() == o.w();
+    }
+    /** Compare against another vector.
+    @param  o   the other vector.
+    @return     true if this doesn't equal the other vector, false otherwise. */
+    bool operator!=(const vec4& o) const noexcept { return !(*this == o); }
 
     // Public Methods
     /** Get the X component of this vector.

@@ -12,12 +12,10 @@ class mat4 {
     ~mat4() = default;
     /** Default construct this vector. */
     mat4() = default;
+    /** Construct an explicit matrix of vectors, row major. */
     mat4(
         const vec4& v0, const vec4& v1, const vec4& v2, const vec4& v3) noexcept
-        : m_data{ { v0.x(), v0.y(), v0.z(), v0.w() },
-                  { v1.x(), v1.y(), v1.z(), v1.w() },
-                  { v2.x(), v2.y(), v2.z(), v2.w() },
-                  { v3.x(), v3.y(), v3.z(), v3.w() } } {}
+        : m_data{ v0, v1, v2, v3 } {}
     /** Default copy constructor. */
     mat4(const mat4& o) = default;
     /** Default move constructor. */
@@ -28,14 +26,31 @@ class mat4 {
     mat4& operator=(const mat4& p) = default;
     /** Default move-assignment operator. */
     mat4& operator=(mat4&& p) noexcept = default;
+    /** Retrieve the row at the index specified.
+    @param  index   the row number to retrieve.
+    @return         reference to the row specified. */
+    vec4& operator[](const size_t& index) { return m_data[index]; }
+    /** Compare against another matrix.
+    @param  o       the other matrix.
+    @return         true if this equals the other matrix, false otherwise. */
+    bool operator==(const mat4& o) const noexcept {
+        for (int x = 0; x < 4; ++x)
+            if (m_data[x] != o.m_data[x])
+                return false;
+        return true;
+    }
+    /** Compare against another matrix.
+    @param  o   the other vector.
+    @return     true if this doesn't equal the other matrix, false otherwise. */
+    bool operator!=(const mat4& o) const noexcept { return !(*this == o); }
 
     // Public Methods
     /** Get a pointer to the underlying data container.
-    @return     pointer to the data array. */
-    float* data() noexcept { return &m_data[0][0]; }
+    @return         pointer to the data array. */
+    float* data() noexcept { return m_data[0].data(); }
     /** Get a const pointer to the underlying data container.
-    @return     pointer to the data array. */
-    const float* data() const noexcept { return &m_data[0][0]; }
+    @return         pointer to the data array. */
+    const float* data() const noexcept { return m_data[0].data(); }
     /** Create a transform matrix looking at a point a given another point.
     @param  eye     the eye position.
     @param  center  the center of the target to look at.
@@ -49,18 +64,18 @@ class mat4 {
         u = s.cross(f);
 
         mat4 Result;
-        Result.m_data[0][0] = s.x();
-        Result.m_data[1][0] = s.y();
-        Result.m_data[2][0] = s.z();
-        Result.m_data[3][0] = -s.dot(eye);
-        Result.m_data[0][1] = u.x();
-        Result.m_data[1][1] = u.y();
-        Result.m_data[2][1] = u.z();
-        Result.m_data[3][1] = -u.dot(eye);
-        Result.m_data[0][2] = -f.x();
-        Result.m_data[1][2] = -f.y();
-        Result.m_data[2][2] = -f.z();
-        Result.m_data[3][2] = f.dot(eye);
+        Result[0].x() = s.x();
+        Result[1].x() = s.y();
+        Result[2].x() = s.z();
+        Result[3].x() = -s.dot(eye);
+        Result[0].y() = u.x();
+        Result[1].y() = u.y();
+        Result[2].y() = u.z();
+        Result[3].y() = -u.dot(eye);
+        Result[0].z() = -f.x();
+        Result[1].z() = -f.y();
+        Result[2].z() = -f.z();
+        Result[3].z() = f.dot(eye);
         return Result;
     }
     /** Create a perspective projection matrix.
@@ -76,17 +91,17 @@ class mat4 {
         float tanHalfFovy = tanf(rad / static_cast<float>(2));
 
         mat4 Result;
-        Result.m_data[0][0] = 1.0F / (aspect * tanHalfFovy);
-        Result.m_data[1][1] = 1.0F / (tanHalfFovy);
-        Result.m_data[2][2] = -(zFar + zNear) / (zFar - zNear);
-        Result.m_data[2][3] = -1.0F;
-        Result.m_data[3][2] = -(2.0F * zFar * zNear) / (zFar - zNear);
+        Result[0].x() = 1.0F / (aspect * tanHalfFovy);
+        Result[1].y() = 1.0F / (tanHalfFovy);
+        Result[2].z() = -(zFar + zNear) / (zFar - zNear);
+        Result[2].w() = -1.0F;
+        Result[3].z() = -(2.0F * zFar * zNear) / (zFar - zNear);
         return Result;
     }
 
     private:
     // Private Attributes
-    float m_data[4][4]{
+    vec4 m_data[4]{
         { 1, 0, 0, 0 }, { 0, 1, 0, 0 }, { 0, 0, 1, 0 }, { 0, 0, 0, 1 }
     };
 };

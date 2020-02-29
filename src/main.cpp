@@ -237,15 +237,12 @@ int main() {
         // Main Loop
         double lastTime(0.0);
         double rotation(0.0);
-        double timeAccumulator(0.0);
-        while (glfwWindowShouldClose(window.pointer()) == 0 &&
-               timeAccumulator <= 10.0) {
+        while (glfwWindowShouldClose(window.pointer()) == 0) {
             const auto time = glfwGetTime();
             const auto deltaTime = time - lastTime;
             render_loop_func(
                 deltaTime, rotation, shader, hullModel, cloudModel);
             lastTime = time;
-            timeAccumulator += deltaTime;
             glfwPollEvents();
             glfwSwapBuffers(window.pointer());
         }
