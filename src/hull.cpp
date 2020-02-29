@@ -17,7 +17,7 @@ std::tuple<float, float, float, float> cross_test(
 std::vector<vec3> Hull::generate_point_cloud(
     const float& scale, const size_t& count, const unsigned int& seed) {
     std::uniform_real_distribution<float> randomFloats(-scale, scale);
-    std::default_random_engine generator(seed);
+    std::mt19937 generator(seed);
     std::vector<vec3> points(count);
     std::generate(std::begin(points), std::end(points), [&]() {
         return vec3{ randomFloats(generator), randomFloats(generator),
