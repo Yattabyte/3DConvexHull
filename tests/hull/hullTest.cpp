@@ -51,7 +51,7 @@ void cloudTest(const std::vector<vec3>& pointCloud) {
             min.z() = point.z();
     }
     [[maybe_unused]] const auto delta = max - min;
-    assert(ceil((delta.x() + delta.y() + delta.z()) / 6.0F) == ceil(scale));
+    assert(ceilf((delta.x() + delta.y() + delta.z()) / 6.0F) == ceilf(scale));
 
     // Ensure deterministic point cloud
     assert(

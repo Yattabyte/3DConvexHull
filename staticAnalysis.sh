@@ -63,4 +63,4 @@ Starting OCLint
 **************************************************"
 cmake -DCMAKE_CXX_FLAGS="-g -O0" -DCMAKE_EXE_LINKER_FLAGS="-g -O0" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON . || exit 1
 cmake --build . --clean-first -- -j $(nproc) || exit 1
-oclint-json-compilation-database -i src -i tests -e external || exit 1
+oclint-json-compilation-database -i src -i tests -e external
