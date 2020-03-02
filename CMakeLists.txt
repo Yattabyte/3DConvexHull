@@ -2,7 +2,7 @@
 ### 3D Convex Hull ###
 ######################
 cmake_minimum_required(VERSION 3.9.2)
-project(ConvexHull VERSION 0.9.7 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
+project(ConvexHull VERSION 0.10.0 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
 include(ExternalProject)
 
 # Set mandatory requirements
@@ -37,7 +37,7 @@ endif()
 # Add source files
 find_package(Threads REQUIRED)
 find_package(OpenGL REQUIRED)
-add_subdirectory(external/glfw)
+add_subdirectory(external/MiniGFX)
 add_subdirectory(src)
 
 
@@ -76,6 +76,6 @@ if(DOXYGEN_FOUND)
         set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
         set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ${PROJECT_SOURCE_DIR}/README.md)
         set(DOXYGEN_EXCLUDE ${PROJECT_SOURCE_DIR}/external/ ${PROJECT_SOURCE_DIR}/external/glfw)
-        doxygen_add_docs(Documentation ${PROJECT_SOURCE_DIR} COMMENT "Generate docs")
+        doxygen_add_docs(ConvexHullDocs ${PROJECT_SOURCE_DIR} COMMENT "Generate Convex Hull Docs")
     endif()
 endif()

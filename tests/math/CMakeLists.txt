@@ -5,8 +5,6 @@ set(Module MathTest)
 
 # Create Library using the supplied files
 set(FILES
-    ${PROJECT_SOURCE_DIR}/src/mat.hpp
-    ${PROJECT_SOURCE_DIR}/src/vec.hpp
     mathTest.cpp
 )
 add_executable(${Module} ${FILES})
@@ -16,6 +14,7 @@ target_include_directories(${Module}
 )
 
 # Add library dependencies
+add_dependencies(${Module} MiniGFX)
 target_compile_features(${Module} PRIVATE cxx_std_17)
 target_link_libraries(${Module} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(${Module} PUBLIC glfw OpenGL::GL)

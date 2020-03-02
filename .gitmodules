@@ -1,0 +1,3 @@
+[submodule "external/MiniGFX"]
+	path = external/MiniGFX
+	url = https://github.com/Yattabyte/MiniGFX
