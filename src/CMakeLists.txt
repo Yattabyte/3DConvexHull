@@ -23,8 +23,8 @@ target_include_directories(${Module}
 
 # Add library dependencies
 add_dependencies(${Module} MiniGFXLib)
-target_compile_features(${Module} PRIVATE cxx_std_17)
 target_link_libraries(${Module} PUBLIC MiniGFXLib)
+target_compile_features(${Module} PRIVATE cxx_std_17)
 target_link_libraries(${Module} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(${Module} PUBLIC glfw OpenGL::GL)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang" AND "${CXX_COMPILER_VERSION}" LESS_EQUAL "9.0")
