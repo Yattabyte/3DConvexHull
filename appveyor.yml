@@ -10,7 +10,7 @@ clone_script:
     git clone -q --branch=%APPVEYOR_REPO_BRANCH% https://github.com/%APPVEYOR_REPO_NAME%.git %APPVEYOR_BUILD_FOLDER%
     && cd %APPVEYOR_BUILD_FOLDER%
     && git checkout -qf %APPVEYOR_REPO_COMMIT%
-    && git submodule update --init --recursive
+    && git submodule update --init --recursive --remote --merge -f
 
 build_script:
 - cmd: cmake -DCMAKE_GENERATOR_PLATFORM=x64 -DBUILD_TESTING=ON -DCODE_COVERAGE=OFF -DBUILD_SHARED_LIBS=0 .
