@@ -1,2 +1,14 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Sources
+*.c     text diff=c
+*.cc    text diff=cpp
+*.cxx   text diff=cpp
+*.cpp   text diff=cpp
+*.c++   text diff=cpp
+*.h     text diff=c
+*.hh    text diff=cpp
+*.hxx   text diff=cpp
+*.hpp   text diff=cpp
+*.h++   text diff=cpp

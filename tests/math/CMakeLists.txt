@@ -18,8 +18,8 @@ target_include_directories(${Module}
 )
 
 # Add library dependencies
-add_dependencies(${Module} MiniGFXLib)
-target_link_libraries(${Module} PUBLIC MiniGFXLib)
+add_dependencies(${Module} MiniGFXCore)
+target_link_libraries(${Module} PUBLIC MiniGFXCore)
 target_compile_features(${Module} PRIVATE cxx_std_17)
 target_link_libraries(${Module} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(${Module} PUBLIC glfw OpenGL::GL)

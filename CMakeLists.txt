@@ -2,7 +2,7 @@
 ### 3D Convex Hull ###
 ######################
 cmake_minimum_required(VERSION 3.9.2)
-project(ConvexHull VERSION 0.10.2 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
+project(ConvexHull VERSION 0.11.0 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
 include(ExternalProject)
 
 # Set mandatory requirements
@@ -14,7 +14,6 @@ set(CMAKE_TOOLCHAIN_FILE 64bit.toolchain)
 option(BUILD_TESTING "Build Unit Tests" ON)
 option(CODE_COVERAGE "Enable code coverage reporting for GCC/Clang" OFF)
 option(STATIC_ANALYSIS "Enable static code analysis using GCC" OFF)
-
 
 # Set compilation flags per-compiler
 if(MSVC)
@@ -33,19 +32,16 @@ elseif(CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fno-omit-frame-pointer -fno-optimize-sibling-calls")
 endif()
 
-
 # Add source files
 find_package(Threads REQUIRED)
 find_package(OpenGL REQUIRED)
 add_subdirectory(external/MiniGFX)
 add_subdirectory(src)
 
-
 # Optionally build examples
 if(EXAMPLES)
     #add_subdirectory( examples/... )
 endif()
-
 
 # Optionally build unit tests
 if(BUILD_TESTING)
@@ -66,16 +62,14 @@ endif()
 #################
 # DOXYGEN CHECK #
 #################
+option(CONVEXHULL_BUILD_DOCS "Generate documentation for 3D Convex Hull" true)
 find_package(Doxygen QUIET)
-if(DOXYGEN_FOUND)
-    option(GENERATE_DOCS "Generate documentation using Doxygen" true)
-    if(GENERATE_DOCS)
-        set(DOXYGEN_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/docs/)
-        set(DOXYGEN_MARKDOWN_SUPPORT YES)
-        set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-        set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
-        set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ${PROJECT_SOURCE_DIR}/README.md)
-        set(DOXYGEN_EXCLUDE ${PROJECT_SOURCE_DIR}/external/ ${PROJECT_SOURCE_DIR}/external/glfw)
-        doxygen_add_docs(ConvexHullDocs ${PROJECT_SOURCE_DIR} COMMENT "Generate Convex Hull Docs")
-    endif()
+if(DOXYGEN_FOUND AND CONVEXHULL_BUILD_DOCS)
+    set(DOXYGEN_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/docs/)
+    set(DOXYGEN_MARKDOWN_SUPPORT YES)
+    set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
+    set(DOXYGEN_JAVADOC_AUTOBRIEF YES)
+    set(DOXYGEN_USE_MDFILE_AS_MAINPAGE ${PROJECT_SOURCE_DIR}/README.md)
+    set(DOXYGEN_EXCLUDE ${PROJECT_SOURCE_DIR}/external/ ${PROJECT_SOURCE_DIR}/external/glfw)
+    doxygen_add_docs(CONVEXHULL_BUILD_DOCS ${PROJECT_SOURCE_DIR} COMMENT "Generate documentation for 3D Convex Hull")
 endif()
