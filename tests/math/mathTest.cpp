@@ -1,5 +1,5 @@
-#include "mat.hpp"
-#include "vec.hpp"
+#include "Utility/mat.hpp"
+#include "Utility/vec.hpp"
 #include <cassert>
 #include <iostream>
 #include <string>

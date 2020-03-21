@@ -2,7 +2,7 @@
 ### 3D Convex Hull ###
 ######################
 cmake_minimum_required(VERSION 3.9.2)
-project(ConvexHull VERSION 0.11.2 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
+project(ConvexHull VERSION 0.12.0 DESCRIPTION "Generates and renders a convex hull from a point cloud, using C++17 & OpenGL 4.6")
 include(ExternalProject)
 
 # Set mandatory requirements
@@ -11,6 +11,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED YES)
 set(CXX_EXTENSIONS YES)
 set(USE32BIT FALSE)
 set(CMAKE_TOOLCHAIN_FILE 64bit.toolchain)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 option(BUILD_TESTING "Build Unit Tests" ON)
 option(CODE_COVERAGE "Enable code coverage reporting for GCC/Clang" OFF)
 option(STATIC_ANALYSIS "Enable static code analysis using GCC" OFF)

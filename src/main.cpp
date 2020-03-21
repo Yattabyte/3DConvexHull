@@ -1,10 +1,11 @@
 #define GLFW_INCLUDE_NONE
+#include "Model/model.hpp"
+#include "Utility/indirectDraw.hpp"
+#include "Utility/shader.hpp"
+#include "Utility/vec.hpp"
+#include "Utility/window.hpp"
 #include "hull.hpp"
 #include "mat.hpp"
-#include "model.hpp"
-#include "shader.hpp"
-#include "vec.hpp"
-#include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cmath>
@@ -47,7 +48,8 @@ void error_shutdown(const std::string& errorMsg) {
 
 void render_loop_func(
     const double& deltaTime, double& rotation, const Shader& shader,
-    const Model& hullModel, const Model& cloudModel) noexcept {
+    const Model& hullModel, const IndirectDraw& hullDraw,
+    const Model& cloudModel, const IndirectDraw& cloudDraw) noexcept {
     // Update rotation based on deltaTime
     rotation += deltaTime * 2.5F;
 
@@ -75,30 +77,30 @@ void render_loop_func(
     shader.uniformLocation(12, vec4{ 0.25F });
     shader.bind();
     hullModel.bind();
-    hullModel.draw(GL_TRIANGLES);
+    hullDraw.drawCall(GL_TRIANGLES);
 
     // Draw internal point cloud model
     glDepthFunc(GL_ALWAYS);
     shader.uniformLocation(12, vec4{ 1, 0.25F, 0.25F, 1 });
     cloudModel.bind();
-    cloudModel.draw(GL_POINTS);
+    cloudDraw.drawCall(GL_POINTS);
 
     // Draw Hull White front-face
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     shader.uniformLocation(12, vec4{ 1, 1, 1, 0.25F });
     hullModel.bind();
-    hullModel.draw(GL_TRIANGLES);
+    hullDraw.drawCall(GL_TRIANGLES);
 
     // Draw triangle outline
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     shader.uniformLocation(12, vec4{ 0.2F, 0.5F, 1, 1 });
-    hullModel.draw(GL_TRIANGLES);
+    hullDraw.drawCall(GL_TRIANGLES);
 
     // Draw outside points
     shader.uniformLocation(12, vec4{ 0.5F, 1, 0.2F, 1 });
     cloudModel.bind();
-    cloudModel.draw(GL_POINTS);
+    cloudDraw.drawCall(GL_POINTS);
 }
 
 void register_debug() {
@@ -225,6 +227,12 @@ int main() {
         const auto pointCloud(Hull::generate_point_cloud(7.5F, 512, seed));
         const Model hullModel(Hull::generate_convex_hull(pointCloud));
         const Model cloudModel(pointCloud);
+        const IndirectDraw hullDraw(
+            static_cast<GLuint>(hullModel.vertexCount()), 1, 0,
+            GL_CLIENT_STORAGE_BIT);
+        const IndirectDraw cloudDraw(
+            static_cast<GLuint>(cloudModel.vertexCount()), 1, 0,
+            GL_CLIENT_STORAGE_BIT);
 
         // Enable point rendering and blending
         glEnable(GL_PROGRAM_POINT_SIZE);
@@ -241,7 +249,8 @@ int main() {
             const auto time = glfwGetTime();
             const auto deltaTime = time - lastTime;
             render_loop_func(
-                deltaTime, rotation, shader, hullModel, cloudModel);
+                deltaTime, rotation, shader, hullModel, hullDraw, cloudModel,
+                cloudDraw);
             lastTime = time;
             glfwPollEvents();
             glfwSwapBuffers(window.pointer());
