@@ -4,6 +4,10 @@
 #include <limits>
 #include <string>
 
+//////////////////////////////////////////////////////////////////////
+/// Use the shared mini namespace
+using namespace mini;
+
 // Constant variables for this test
 constexpr auto scale(10.0F);
 constexpr auto pointCount(16384ULL);

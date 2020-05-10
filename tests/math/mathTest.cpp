@@ -4,6 +4,10 @@
 #include <iostream>
 #include <string>
 
+//////////////////////////////////////////////////////////////////////
+/// Use the shared mini namespace
+using namespace mini;
+
 void vec3Test() noexcept;
 void vec4Test() noexcept;
 void mat4Test() noexcept;
