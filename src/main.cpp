@@ -1,11 +1,11 @@
 #define GLFW_INCLUDE_NONE
 #include "Model/model.hpp"
 #include "Utility/indirectDraw.hpp"
+#include "Utility/mat.hpp"
 #include "Utility/shader.hpp"
 #include "Utility/vec.hpp"
-#include "Utility/window.hpp"
 #include "hull.hpp"
-#include "mat.hpp"
+#include "window.hpp"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cmath>
@@ -13,6 +13,10 @@
 #include <iostream>
 #include <random>
 #include <vector>
+
+//////////////////////////////////////////////////////////////////////
+/// Use the shared mini namespace
+using namespace mini;
 
 constexpr auto const vertCode = R"END(
     #version 430

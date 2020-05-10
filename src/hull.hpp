@@ -5,6 +5,10 @@
 #include "Utility/vec.hpp"
 #include <vector>
 
+//////////////////////////////////////////////////////////////////////
+/// Use the shared mini namespace
+using namespace mini;
+
 /** Namespace encapsulating all hull-related operations. */
 namespace Hull {
 /** A triangle referencing specific point indexes. */

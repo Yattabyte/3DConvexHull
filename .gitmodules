@@ -1,3 +1,6 @@
 [submodule "external/MiniGFX"]
 	path = external/MiniGFX
 	url = https://github.com/Yattabyte/MiniGFX
+[submodule "external/glfw"]
+	path = external/glfw
+	url = https://github.com/glfw/glfw

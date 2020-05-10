@@ -6,9 +6,11 @@ set(Module convexHullEx)
 # Configure and acquire files
 set(FILES
     # Header files
+    window.hpp
     hull.hpp
 
     # Source files
+    window.cpp
     hull.cpp
     main.cpp
 )
@@ -17,6 +19,7 @@ set(FILES
 add_executable(${Module} ${FILES})
 target_include_directories(${Module} 
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} 
+    PUBLIC ${PROJECT_SOURCE_DIR}/external/glfw/
     PUBLIC ${PROJECT_SOURCE_DIR}/external/MiniGFX/external
     PUBLIC ${PROJECT_SOURCE_DIR}/external/MiniGFX/src
 )

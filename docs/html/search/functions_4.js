@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['lookat',['lookAt',['../classmat4.html#a15134d95f684c133705553888cf8e7f3',1,'mat4']]]
+  ['normal',['normal',['../struct_hull_1_1_triangle.html#a22790cbd70ee108646b31b41bba10ede',1,'Hull::Triangle']]]
 ];

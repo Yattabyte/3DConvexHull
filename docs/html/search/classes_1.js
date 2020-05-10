@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['snork',['Snork',['../struct_hull_1_1_snork.html',1,'Hull']]]
+  ['triangle',['Triangle',['../struct_hull_1_1_triangle.html',1,'Hull']]]
 ];
